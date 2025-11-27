@@ -9,6 +9,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         #history-modal, #comment-history { white-space: pre-wrap; }
+        /* Transition douce pour l'apparition des champs */
+        #closing-details { transition: all 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -22,7 +24,7 @@
             </p>
         </header>
         
-        <!-- DASHBOARD (S'adapte aux filtres) -->
+        <!-- DASHBOARD -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-blue-500">
                 <p class="text-sm font-medium text-gray-500">Deals (Vue Actuelle)</p>
@@ -46,18 +48,12 @@
                 <!-- Données principales -->
                 <div><label for="nomPrenom" class="block text-sm font-medium text-gray-700">Nom Prénom *</label><input type="text" id="nomPrenom" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div><label for="source" class="block text-sm font-medium text-gray-700">Source (A) *</label><select id="source" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white transition duration-150"><option value="">Sélectionner...</option><option value="Marketing">Marketing</option><option value="Setting">Setting</option><option value="Prise de rdv">Prise de RDV</option><option value="Autre">Autre</option></select></div>
-                
-                <!-- Entrepreneur (Texte) -->
                 <div><label for="entrepreneur" class="block text-sm font-medium text-gray-700">Entrepreneur (F)</label><input type="text" id="entrepreneur" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Nom de l'entrepreneur"></div>
 
                 <div><label for="dateRDV" class="block text-sm font-medium text-gray-700">Date RDV / Dernier Suivi</label><input type="date" id="dateRDV" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div><label for="email" class="block text-sm font-medium text-gray-700">Adresse Email (C)</label><input type="email" id="email" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div><label for="numero" class="block text-sm font-medium text-gray-700">Numéro (D)</label><input type="text" id="numero" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g. 0612345678"></div>
                 
-                <div><label for="formation" class="block text-sm font-medium text-gray-700">Formation / Produit (L)</label><select id="formation" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white transition duration-150"><option value="">Sélectionner...</option><option value="Produit B 4000">Produit B 4000</option><option value="Produit A 2000">Produit A 2000</option><option value="N/A">N/A</option></select></div>
-                <div><label for="prix" class="block text-sm font-medium text-gray-700">Prix (€) (M)</label><input type="number" id="prix" step="0.01" min="0" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
-                <div><label for="typePaiement" class="block text-sm font-medium text-gray-700">Type de Paiement (N)</label><select id="typePaiement" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white transition duration-150"><option value="">Sélectionner...</option><option value="CB">Carte Bancaire</option><option value="Virement">Virement</option><option value="3x">Paiement en 3x</option><option value="Intégral">Paiement Intégral</option><option value="N/A">N/A</option></select></div>
-                <div><label for="mensualite" class="block text-sm font-medium text-gray-700">Mensualité (€) (O)</label><input type="number" id="mensualite" step="0.01" min="0" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div class="md:col-span-3"><label for="enregistrementCall" class="block text-sm font-medium text-gray-700">Lien Enregistrement du call (R)</label><input type="url" id="enregistrementCall" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="https://lien.vers.appel"></div>
 
                 <!-- Checkboxes -->
@@ -67,8 +63,28 @@
                         <label class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm border hover:border-blue-400 cursor-pointer transition"><input type="checkbox" id="ghost" class="h-5 w-5 text-yellow-600 rounded border-gray-300 focus:ring-yellow-500"><span class="text-sm font-medium text-gray-700">Ghost (G)</span></label>
                         <label class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm border hover:border-blue-400 cursor-pointer transition"><input type="checkbox" id="aFollowUp" class="h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"><span class="text-sm font-medium text-gray-700">À Follow Up (H)</span></label>
                         <label class="flex items-center space-x-2 p-3 bg-red-50 rounded-lg shadow-sm border border-red-200 hover:border-red-400 cursor-pointer transition"><input type="checkbox" id="nonClose" class="h-5 w-5 text-red-600 rounded border-gray-300 focus:ring-red-500"><span class="text-sm font-medium text-gray-700">Non Closé (I)</span></label>
-                        <label class="flex items-center space-x-2 p-3 bg-green-50 rounded-lg shadow-sm border border-green-200 hover:border-green-400 cursor-pointer transition"><input type="checkbox" id="close" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500"><span class="text-sm font-medium text-gray-700 font-bold">Closé (J)</span></label>
+                        
+                        <!-- La case CLOSÉ contrôle l'affichage des détails -->
+                        <label class="flex items-center space-x-2 p-3 bg-green-50 rounded-lg shadow-sm border-2 border-green-200 hover:border-green-500 cursor-pointer transition ring-offset-2 focus-within:ring-2 ring-green-500">
+                            <input type="checkbox" id="close" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500">
+                            <span class="text-sm font-bold text-green-800">Closé (J)</span>
+                        </label>
+                        
                         <label class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm border hover:border-blue-400 cursor-pointer transition"><input type="checkbox" id="compta" class="h-5 w-5 text-teal-600 rounded border-gray-300 focus:ring-teal-500"><span class="text-sm font-medium text-gray-700">Compta ? (P)</span></label>
+                    </div>
+                </div>
+
+                <!-- SECTION DÉTAILS CLOSING (Masquée par défaut) -->
+                <div id="closing-details" class="md:col-span-3 hidden border-l-4 border-green-500 pl-4 bg-green-50 rounded-r-lg py-4 pr-4 mt-2">
+                    <h3 class="text-lg font-semibold text-green-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Détails de la Vente
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label for="formation" class="block text-sm font-medium text-green-900">Formation / Produit (L)</label><select id="formation" class="mt-1 block w-full px-4 py-2 border border-green-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 bg-white"><option value="">Sélectionner...</option><option value="Produit B 4000">Produit B 4000</option><option value="Produit A 2000">Produit A 2000</option><option value="N/A">N/A</option></select></div>
+                        <div><label for="prix" class="block text-sm font-medium text-green-900">Prix (€) (M)</label><input type="number" id="prix" step="0.01" min="0" class="mt-1 block w-full px-4 py-2 border border-green-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="typePaiement" class="block text-sm font-medium text-green-900">Type de Paiement (N)</label><select id="typePaiement" class="mt-1 block w-full px-4 py-2 border border-green-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 bg-white"><option value="">Sélectionner...</option><option value="CB">Carte Bancaire</option><option value="Virement">Virement</option><option value="3x">Paiement en 3x</option><option value="Intégral">Paiement Intégral</option><option value="N/A">N/A</option></select></div>
+                        <div><label for="mensualite" class="block text-sm font-medium text-green-900">Mensualité (€) (O)</label><input type="number" id="mensualite" step="0.01" min="0" class="mt-1 block w-full px-4 py-2 border border-green-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500"></div>
                     </div>
                 </div>
 
@@ -93,16 +109,13 @@
 
         <!-- FILTRES -->
         <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <!-- Nouveau Filtre MOIS -->
             <div>
                 <label for="filter-month" class="block text-sm font-medium text-gray-700">Vue Mensuelle (Date RDV)</label>
                 <select id="filter-month" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-600 focus:border-blue-600 bg-white font-semibold text-blue-900">
                     <option value="current">📅 Mois en cours</option>
                     <option value="all">Tout l'historique</option>
-                    <!-- Les autres mois seront injectés dynamiquement ici -->
                 </select>
             </div>
-
             <div>
                 <label for="filter-status" class="block text-sm font-medium text-gray-700">Filtrer par statut</label>
                 <select id="filter-status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -113,7 +126,6 @@
                     <option value="nonclosed">Non Closé (I)</option>
                 </select>
             </div>
-            
             <div>
                 <label for="filter-source" class="block text-sm font-medium text-gray-700">Filtrer par Source (A)</label>
                 <select id="filter-source" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -124,7 +136,6 @@
                     <option value="Autre">Autre</option>
                 </select>
             </div>
-            
             <div>
                 <button id="reset-filters" class="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-150">Tout Réinitialiser</button>
             </div>
@@ -165,7 +176,6 @@
     </div>
 
     <script>
-        // Mettez l'URL de votre script ici si elle a changé, sinon gardez celle-ci
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwJjpT47S5CcDklTn79vPNTbpkvcOR00JlzdjBip_CmIcq2j3f4KmTYKX_PqI3Gg41/exec'; 
 
         let allDealsCache = []; 
@@ -186,7 +196,7 @@
         const metricFollowUp = document.getElementById('metric-followup');
         const metricClosed = document.getElementById('metric-closed');
         
-        const filterMonth = document.getElementById('filter-month'); // Nouveau sélecteur
+        const filterMonth = document.getElementById('filter-month'); 
         const filterStatus = document.getElementById('filter-status');
         const filterSource = document.getElementById('filter-source');
         const resetFiltersBtn = document.getElementById('reset-filters');
@@ -196,6 +206,24 @@
         const modalHistoryContent = document.getElementById('modal-history-content');
         const closeModalBtn = document.getElementById('close-modal-btn');
         
+        // Sélecteurs pour la gestion d'affichage conditionnel
+        const closeCheckbox = document.getElementById('close');
+        const closingDetailsDiv = document.getElementById('closing-details');
+
+        // --- Logique d'affichage dynamique (Closing) ---
+        function toggleClosingDetails() {
+            if (closeCheckbox.checked) {
+                closingDetailsDiv.classList.remove('hidden');
+                // Optionnel : ajouter une petite animation ou focus
+            } else {
+                closingDetailsDiv.classList.add('hidden');
+                // Optionnel : vider les champs si on décoche ? (non recommandé pour éviter la perte de données accidentelle)
+            }
+        }
+
+        // Écouter le changement sur la checkbox Closé
+        closeCheckbox.addEventListener('change', toggleClosingDetails);
+
         // --- API ---
         async function fetchAppsScript(action, data = null) {
             const url = APPS_SCRIPT_URL + (action === 'READ' ? '?action=READ' : '');
@@ -232,12 +260,8 @@
             loadingMessage.classList.add('hidden');
 
             if (result.success) {
-                // NETTOYAGE: On enlève les lignes vides (sans Nom)
                 allDealsCache = (result.deals || []).filter(d => d.nomPrenom && d.nomPrenom.toString().trim() !== "");
-                
-                // Générer les options de mois dynamiquement basées sur les données
                 populateMonthFilter();
-                
                 applyFiltersAndRender();
                 
                 if (allDealsCache.length === 0) noDataMessage.textContent = "Aucune donnée dans le Google Sheet.";
@@ -250,30 +274,22 @@
             }
         }
 
-        // --- Logique des Mois ---
         function populateMonthFilter() {
-            // Garder "Mois en cours" et "Tout"
             filterMonth.innerHTML = '<option value="current">📅 Mois en cours</option><option value="all">Tout l\'historique</option>';
-            
             const monthsSet = new Set();
             allDealsCache.forEach(deal => {
                 if (deal.dateRDV) {
                     const date = new Date(deal.dateRDV);
                     if (!isNaN(date)) {
-                        // Format YYYY-MM pour le tri et l'unicité
                         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                         monthsSet.add(key);
                     }
                 }
             });
-
-            // Convertir en tableau et trier (plus récent en haut)
             const sortedMonths = Array.from(monthsSet).sort().reverse();
-
             sortedMonths.forEach(monthKey => {
                 const [year, month] = monthKey.split('-');
                 const label = new Date(year, month - 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-                // Ajouter l'option
                 const option = document.createElement('option');
                 option.value = monthKey;
                 option.textContent = label.charAt(0).toUpperCase() + label.slice(1);
@@ -282,35 +298,24 @@
         }
 
         function checkMonthFilter(dealDateString, filterValue) {
-            if (!dealDateString) return false; // Pas de date = pas affiché en vue mensuelle
+            if (!dealDateString) return false;
             const dealDate = new Date(dealDateString);
             const now = new Date();
-
-            if (filterValue === 'current') {
-                return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
-            } else if (filterValue === 'all') {
-                return true;
-            } else {
-                // filterValue est "YYYY-MM"
+            if (filterValue === 'current') return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
+            else if (filterValue === 'all') return true;
+            else {
                 const [filterYear, filterMonth] = filterValue.split('-');
                 return dealDate.getFullYear() == filterYear && (dealDate.getMonth() + 1) == filterMonth;
             }
         }
 
-        // --- Filtrage Principal ---
         function applyFiltersAndRender() {
             let filteredDeals = [...allDealsCache];
-            
             const monthVal = filterMonth.value;
             const statusVal = filterStatus.value;
             const sourceVal = filterSource.value;
 
-            // 1. Filtre Mois
-            if (monthVal !== 'all') {
-                filteredDeals = filteredDeals.filter(deal => checkMonthFilter(deal.dateRDV, monthVal));
-            }
-
-            // 2. Filtre Statut
+            if (monthVal !== 'all') filteredDeals = filteredDeals.filter(deal => checkMonthFilter(deal.dateRDV, monthVal));
             if (statusVal !== 'all') {
                 filteredDeals = filteredDeals.filter(deal => {
                     switch (statusVal) {
@@ -322,13 +327,8 @@
                     }
                 });
             }
-
-            // 3. Filtre Source
-            if (sourceVal !== 'all') {
-                filteredDeals = filteredDeals.filter(deal => deal.source === sourceVal);
-            }
+            if (sourceVal !== 'all') filteredDeals = filteredDeals.filter(deal => deal.source === sourceVal);
             
-            // Tri par date
             filteredDeals.sort((a, b) => {
                 const aPast = a.dateRDV && isPastDate(a.dateRDV);
                 const bPast = b.dateRDV && isPastDate(b.dateRDV);
@@ -340,7 +340,6 @@
             updateDashboardMetrics(filteredDeals);
             renderDeals(filteredDeals);
             
-            // Message si vide après filtrage
             if (filteredDeals.length === 0) {
                 noDataMessage.textContent = "Aucun deal trouvé pour cette période/filtre.";
                 noDataMessage.classList.remove('hidden');
@@ -349,11 +348,9 @@
             }
         }
         
-        // Listeners
         filterMonth.addEventListener('change', applyFiltersAndRender);
         filterStatus.addEventListener('change', applyFiltersAndRender);
         filterSource.addEventListener('change', applyFiltersAndRender);
-        
         resetFiltersBtn.addEventListener('click', () => {
             filterMonth.value = 'current';
             filterStatus.value = 'all';
@@ -361,7 +358,6 @@
             applyFiltersAndRender();
         });
 
-        // --- Envoi Formulaire ---
         dealForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nomPrenom = document.getElementById('nomPrenom').value.trim();
@@ -407,7 +403,6 @@
             }
         });
 
-        // --- Fonctions d'Edition/Suppression ---
         window.editDeal = async function(id) {
             const deal = allDealsCache.find(d => d.id === id);
             if (!deal) return;
@@ -421,7 +416,11 @@
             document.getElementById('ghost').checked = deal.ghost || false;
             document.getElementById('aFollowUp').checked = deal.aFollowUp || false;
             document.getElementById('nonClose').checked = deal.nonClose || false;
-            document.getElementById('close').checked = deal.close || false;
+            
+            // Gestion spéciale pour CLOSÉ
+            const isClosed = deal.close || false;
+            document.getElementById('close').checked = isClosed;
+            
             document.getElementById('formation').value = deal.formation || '';
             document.getElementById('prix').value = deal.prix || '';
             document.getElementById('typePaiement').value = deal.typePaiement || '';
@@ -429,6 +428,9 @@
             document.getElementById('compta').checked = deal.compta || false;
             document.getElementById('enregistrementCall').value = deal.enregistrementCall || '';
             
+            // Appel manuel pour afficher/masquer les champs en fonction du statut chargé
+            toggleClosingDetails();
+
             newCommentField.value = '';
             displayCommentHistory(deal.commentaireHistory);
 
@@ -459,11 +461,14 @@
             formTitle.textContent = 'Ajouter un Nouveau Deal';
             submitText.textContent = 'Ajouter le Deal';
             cancelEditBtn.classList.add('hidden');
+            
+            // Réinitialiser l'affichage des détails closing
+            toggleClosingDetails();
+            
             newCommentField.placeholder = 'Ajouter une note...';
             document.getElementById('comment-history').classList.add('hidden');
         }
 
-        // --- Affichage ---
         function updateDashboardMetrics(deals) {
             metricTotal.textContent = deals.length;
             metricFollowUp.textContent = deals.filter(l => l.aFollowUp).length;
@@ -472,7 +477,7 @@
 
         function renderDeals(deals) {
             dealsTableBody.innerHTML = '';
-            if (deals.length === 0) return; // Le message no-data est géré dans applyFilters
+            if (deals.length === 0) return;
 
             deals.forEach(deal => {
                 const isClosed = deal.close;
