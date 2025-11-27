@@ -16,27 +16,29 @@
     <div id="app" class="container mx-auto p-4 sm:p-8">
         <header class="mb-8 border-b pb-4">
             <h1 class="text-3xl font-bold text-gray-800">Page de Suivi des Deals de Vente</h1>
-            <p class="text-gray-500">Données synchronisées en temps réel avec Google Sheet via Apps Script API.</p>
+            <p class="text-gray-500">Vue filtrée et nettoyée des données Google Sheet.</p>
             <p class="text-xs text-green-600 font-semibold mt-2" id="app-script-warning">
                 ✅ URL Apps Script configurée.
             </p>
         </header>
         
+        <!-- DASHBOARD (S'adapte aux filtres) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-blue-500">
-                <p class="text-sm font-medium text-gray-500">Deals Totaux</p>
+                <p class="text-sm font-medium text-gray-500">Deals (Vue Actuelle)</p>
                 <p id="metric-total" class="text-2xl font-bold text-gray-900">0</p>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-indigo-500">
-                <p class="text-sm font-medium text-gray-500">À Follow Up (H)</p>
+                <p class="text-sm font-medium text-gray-500">À Follow Up (Vue Actuelle)</p>
                 <p id="metric-followup" class="text-2xl font-bold text-indigo-700">0</p>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-green-500">
-                <p id="metric-closed-label" class="text-sm font-medium text-gray-500">Deals Closés (J)</p>
+                <p id="metric-closed-label" class="text-sm font-medium text-gray-500">Closés (Vue Actuelle)</p>
                 <p id="metric-closed" class="text-2xl font-bold text-green-700">0</p>
             </div>
         </div>
 
+        <!-- Formulaire d'ajout -->
         <div class="bg-white shadow-xl rounded-2xl p-6 mb-8 border border-blue-100">
             <h2 class="text-2xl font-semibold text-blue-800 mb-4" id="form-title">Ajouter un Nouveau Deal</h2>
             <form id="deal-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -45,7 +47,7 @@
                 <div><label for="nomPrenom" class="block text-sm font-medium text-gray-700">Nom Prénom *</label><input type="text" id="nomPrenom" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div><label for="source" class="block text-sm font-medium text-gray-700">Source (A) *</label><select id="source" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white transition duration-150"><option value="">Sélectionner...</option><option value="Marketing">Marketing</option><option value="Setting">Setting</option><option value="Prise de rdv">Prise de RDV</option><option value="Autre">Autre</option></select></div>
                 
-                <!-- Entrepreneur est maintenant ici (texte) -->
+                <!-- Entrepreneur (Texte) -->
                 <div><label for="entrepreneur" class="block text-sm font-medium text-gray-700">Entrepreneur (F)</label><input type="text" id="entrepreneur" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Nom de l'entrepreneur"></div>
 
                 <div><label for="dateRDV" class="block text-sm font-medium text-gray-700">Date RDV / Dernier Suivi</label><input type="date" id="dateRDV" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
@@ -58,7 +60,7 @@
                 <div><label for="mensualite" class="block text-sm font-medium text-gray-700">Mensualité (€) (O)</label><input type="number" id="mensualite" step="0.01" min="0" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"></div>
                 <div class="md:col-span-3"><label for="enregistrementCall" class="block text-sm font-medium text-gray-700">Lien Enregistrement du call (R)</label><input type="url" id="enregistrementCall" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="https://lien.vers.appel"></div>
 
-                <!-- Checkboxes (Statuts Seulement) -->
+                <!-- Checkboxes -->
                 <div class="md:col-span-3 border-t pt-4 mt-2">
                     <h3 class="text-lg font-medium text-gray-700 mb-3">Statuts et Flags</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -89,7 +91,18 @@
             </form>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- FILTRES -->
+        <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Nouveau Filtre MOIS -->
+            <div>
+                <label for="filter-month" class="block text-sm font-medium text-gray-700">Vue Mensuelle (Date RDV)</label>
+                <select id="filter-month" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-600 focus:border-blue-600 bg-white font-semibold text-blue-900">
+                    <option value="current">📅 Mois en cours</option>
+                    <option value="all">Tout l'historique</option>
+                    <!-- Les autres mois seront injectés dynamiquement ici -->
+                </select>
+            </div>
+
             <div>
                 <label for="filter-status" class="block text-sm font-medium text-gray-700">Filtrer par statut</label>
                 <select id="filter-status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -100,13 +113,7 @@
                     <option value="nonclosed">Non Closé (I)</option>
                 </select>
             </div>
-            <div>
-                <label for="filter-rdv-past" class="block text-sm font-medium text-gray-700">Date RDV</label>
-                <select id="filter-rdv-past" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white">
-                    <option value="all">Toutes les dates</option>
-                    <option value="past">RDV passés (Urgent)</option>
-                </select>
-            </div>
+            
             <div>
                 <label for="filter-source" class="block text-sm font-medium text-gray-700">Filtrer par Source (A)</label>
                 <select id="filter-source" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -117,14 +124,15 @@
                     <option value="Autre">Autre</option>
                 </select>
             </div>
-            <div class="flex items-end">
-                <button id="reset-filters" class="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-150">Réinitialiser</button>
+            
+            <div>
+                <button id="reset-filters" class="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-150">Tout Réinitialiser</button>
             </div>
         </div>
 
         <div id="loading-message" class="text-center p-8 text-gray-500">Chargement des données depuis Google Sheet...</div>
         <div id="error-message" class="text-center p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg hidden"></div>
-        <div id="no-data-message" class="text-center p-8 text-gray-500 hidden">Aucun deal trouvé.</div>
+        <div id="no-data-message" class="text-center p-8 text-gray-500 hidden">Aucun deal trouvé pour ce mois.</div>
         
         <div class="mt-8">
             <h3 class="text-xl font-semibold text-gray-800 mb-2">Console de Debugage</h3>
@@ -157,11 +165,13 @@
     </div>
 
     <script>
+        // Mettez l'URL de votre script ici si elle a changé, sinon gardez celle-ci
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwJjpT47S5CcDklTn79vPNTbpkvcOR00JlzdjBip_CmIcq2j3f4KmTYKX_PqI3Gg41/exec'; 
 
         let allDealsCache = []; 
         let editingId = null; 
 
+        // Sélecteurs
         const dealsTableBody = document.getElementById('deals-table-body');
         const dealForm = document.getElementById('deal-form');
         const formTitle = document.getElementById('form-title');
@@ -176,8 +186,8 @@
         const metricFollowUp = document.getElementById('metric-followup');
         const metricClosed = document.getElementById('metric-closed');
         
+        const filterMonth = document.getElementById('filter-month'); // Nouveau sélecteur
         const filterStatus = document.getElementById('filter-status');
-        const filterRdvPast = document.getElementById('filter-rdv-past');
         const filterSource = document.getElementById('filter-source');
         const resetFiltersBtn = document.getElementById('reset-filters');
         
@@ -186,6 +196,7 @@
         const modalHistoryContent = document.getElementById('modal-history-content');
         const closeModalBtn = document.getElementById('close-modal-btn');
         
+        // --- API ---
         async function fetchAppsScript(action, data = null) {
             const url = APPS_SCRIPT_URL + (action === 'READ' ? '?action=READ' : '');
             debugConsole.textContent = `Tentative de ${action}...`;
@@ -199,15 +210,9 @@
                     body: action !== 'READ' ? JSON.stringify({ action, data }) : null,
                 });
                 
-                if (!response.ok) {
-                    const text = await response.text();
-                    debugConsole.textContent = `Erreur HTTP ${response.status}.\n${text}`;
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
+                if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
                 const result = await response.json();
                 debugConsole.textContent = `Action ${action} réussie.`;
-
                 if (!result.success) throw new Error(result.error || result.message);
                 return result;
 
@@ -227,9 +232,15 @@
             loadingMessage.classList.add('hidden');
 
             if (result.success) {
-                allDealsCache = result.deals || [];
+                // NETTOYAGE: On enlève les lignes vides (sans Nom)
+                allDealsCache = (result.deals || []).filter(d => d.nomPrenom && d.nomPrenom.toString().trim() !== "");
+                
+                // Générer les options de mois dynamiquement basées sur les données
+                populateMonthFilter();
+                
                 applyFiltersAndRender();
-                if (allDealsCache.length === 0) noDataMessage.classList.remove('hidden');
+                
+                if (allDealsCache.length === 0) noDataMessage.textContent = "Aucune donnée dans le Google Sheet.";
                 if (editingId) {
                     const currentDeal = allDealsCache.find(d => d.id === editingId);
                     if (!currentDeal) resetForm();
@@ -239,15 +250,70 @@
             }
         }
 
+        // --- Logique des Mois ---
+        function populateMonthFilter() {
+            // Garder "Mois en cours" et "Tout"
+            filterMonth.innerHTML = '<option value="current">📅 Mois en cours</option><option value="all">Tout l\'historique</option>';
+            
+            const monthsSet = new Set();
+            allDealsCache.forEach(deal => {
+                if (deal.dateRDV) {
+                    const date = new Date(deal.dateRDV);
+                    if (!isNaN(date)) {
+                        // Format YYYY-MM pour le tri et l'unicité
+                        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        monthsSet.add(key);
+                    }
+                }
+            });
+
+            // Convertir en tableau et trier (plus récent en haut)
+            const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const label = new Date(year, month - 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+                // Ajouter l'option
+                const option = document.createElement('option');
+                option.value = monthKey;
+                option.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+                filterMonth.appendChild(option);
+            });
+        }
+
+        function checkMonthFilter(dealDateString, filterValue) {
+            if (!dealDateString) return false; // Pas de date = pas affiché en vue mensuelle
+            const dealDate = new Date(dealDateString);
+            const now = new Date();
+
+            if (filterValue === 'current') {
+                return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
+            } else if (filterValue === 'all') {
+                return true;
+            } else {
+                // filterValue est "YYYY-MM"
+                const [filterYear, filterMonth] = filterValue.split('-');
+                return dealDate.getFullYear() == filterYear && (dealDate.getMonth() + 1) == filterMonth;
+            }
+        }
+
+        // --- Filtrage Principal ---
         function applyFiltersAndRender() {
             let filteredDeals = [...allDealsCache];
-            const statusFilter = filterStatus.value;
-            const rdvPastFilter = filterRdvPast.value;
-            const sourceFilter = filterSource.value;
+            
+            const monthVal = filterMonth.value;
+            const statusVal = filterStatus.value;
+            const sourceVal = filterSource.value;
 
-            if (statusFilter !== 'all') {
+            // 1. Filtre Mois
+            if (monthVal !== 'all') {
+                filteredDeals = filteredDeals.filter(deal => checkMonthFilter(deal.dateRDV, monthVal));
+            }
+
+            // 2. Filtre Statut
+            if (statusVal !== 'all') {
                 filteredDeals = filteredDeals.filter(deal => {
-                    switch (statusFilter) {
+                    switch (statusVal) {
                         case 'followup': return deal.aFollowUp;
                         case 'ghost': return deal.ghost;
                         case 'closed': return deal.close;
@@ -257,36 +323,45 @@
                 });
             }
 
-            if (rdvPastFilter === 'past') {
-                filteredDeals = filteredDeals.filter(deal => deal.dateRDV && isPastDate(deal.dateRDV));
-            }
-
-            if (sourceFilter !== 'all') {
-                filteredDeals = filteredDeals.filter(deal => deal.source === sourceFilter);
+            // 3. Filtre Source
+            if (sourceVal !== 'all') {
+                filteredDeals = filteredDeals.filter(deal => deal.source === sourceVal);
             }
             
+            // Tri par date
             filteredDeals.sort((a, b) => {
                 const aPast = a.dateRDV && isPastDate(a.dateRDV);
                 const bPast = b.dateRDV && isPastDate(b.dateRDV);
                 if (aPast && !bPast) return -1; 
                 if (!aPast && bPast) return 1;  
-                return 0; 
+                return new Date(b.dateRDV || 0) - new Date(a.dateRDV || 0);
             });
 
             updateDashboardMetrics(filteredDeals);
             renderDeals(filteredDeals);
+            
+            // Message si vide après filtrage
+            if (filteredDeals.length === 0) {
+                noDataMessage.textContent = "Aucun deal trouvé pour cette période/filtre.";
+                noDataMessage.classList.remove('hidden');
+            } else {
+                noDataMessage.classList.add('hidden');
+            }
         }
         
+        // Listeners
+        filterMonth.addEventListener('change', applyFiltersAndRender);
         filterStatus.addEventListener('change', applyFiltersAndRender);
-        filterRdvPast.addEventListener('change', applyFiltersAndRender);
         filterSource.addEventListener('change', applyFiltersAndRender);
+        
         resetFiltersBtn.addEventListener('click', () => {
+            filterMonth.value = 'current';
             filterStatus.value = 'all';
-            filterRdvPast.value = 'all';
             filterSource.value = 'all';
             applyFiltersAndRender();
         });
 
+        // --- Envoi Formulaire ---
         dealForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nomPrenom = document.getElementById('nomPrenom').value.trim();
@@ -302,7 +377,6 @@
                 id: editingId,
                 nomPrenom,
                 source,
-                // Nouveau champ Entrepreneur
                 entrepreneur: document.getElementById('entrepreneur').value.trim(),
                 email: document.getElementById('email').value.trim(),
                 numero: document.getElementById('numero').value.trim(),
@@ -325,7 +399,7 @@
             const result = await fetchAppsScript(action, dealData);
 
             if (result.success) {
-                alertUser(`Deal pour "${nomPrenom}" enregistré.`, 'success');
+                alertUser(`Deal enregistré avec succès.`, 'success');
                 resetForm();
                 await loadDeals(); 
             } else {
@@ -333,6 +407,7 @@
             }
         });
 
+        // --- Fonctions d'Edition/Suppression ---
         window.editDeal = async function(id) {
             const deal = allDealsCache.find(d => d.id === id);
             if (!deal) return;
@@ -342,7 +417,6 @@
             document.getElementById('email').value = deal.email || '';
             document.getElementById('numero').value = deal.numero || '';
             document.getElementById('dateRDV').value = deal.dateRDV || '';
-            // Remplir le champ texte Entrepreneur
             document.getElementById('entrepreneur').value = deal.entrepreneur || '';
             document.getElementById('ghost').checked = deal.ghost || false;
             document.getElementById('aFollowUp').checked = deal.aFollowUp || false;
@@ -389,18 +463,16 @@
             document.getElementById('comment-history').classList.add('hidden');
         }
 
+        // --- Affichage ---
         function updateDashboardMetrics(deals) {
-            metricTotal.textContent = allDealsCache.length;
-            metricFollowUp.textContent = allDealsCache.filter(l => l.aFollowUp).length;
-            metricClosed.textContent = allDealsCache.filter(l => l.close).length;
+            metricTotal.textContent = deals.length;
+            metricFollowUp.textContent = deals.filter(l => l.aFollowUp).length;
+            metricClosed.textContent = deals.filter(l => l.close).length;
         }
 
         function renderDeals(deals) {
             dealsTableBody.innerHTML = '';
-            if (deals.length === 0) {
-                if (allDealsCache.length > 0) dealsTableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Aucun résultat.</td></tr>`;
-                return;
-            }
+            if (deals.length === 0) return; // Le message no-data est géré dans applyFilters
 
             deals.forEach(deal => {
                 const isClosed = deal.close;
@@ -414,7 +486,7 @@
                 const row = document.createElement('tr');
                 row.className = `hover:bg-gray-100 transition duration-150 ${rowBgClass}`; 
 
-                const dateRDVDisplay = deal.dateRDV ? `<span class="${hasPastRDV ? 'text-red-600 font-bold' : 'text-blue-600'}">${new Date(deal.dateRDV).toLocaleDateString('fr-FR')}</span>` : 'N/A';
+                const dateRDVDisplay = deal.dateRDV ? `<span class="${hasPastRDV ? 'text-red-600 font-bold' : 'text-blue-600'}">${new Date(deal.dateRDV).toLocaleDateString('fr-FR')}</span>` : '<span class="text-gray-400 italic">Non définie</span>';
                 const dashIcon = '—';
                 const flagsDisplay = `
                     <span class="p-1 rounded-full text-xs font-semibold ${deal.ghost ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-100 text-gray-400'}" title="Ghost">${deal.ghost ? 'G' : dashIcon}</span>
@@ -423,8 +495,6 @@
                 `;
                 
                 const prixFormatte = deal.prix ? `${deal.prix.toLocaleString('fr-FR')} €` : 'N/A';
-                
-                // Affichage Entrepreneur dans la première colonne
                 const entrepreneurDisplay = deal.entrepreneur ? `<div class="text-xs text-indigo-600 font-semibold mt-1">🏢 ${deal.entrepreneur}</div>` : '';
 
                 row.innerHTML = `
