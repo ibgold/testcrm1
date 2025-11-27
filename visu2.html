@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closer CRM - Glass Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: radial-gradient(circle at top left, #4f46e5, #0f172a);
+            background-attachment: fixed;
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #818cf8;
+            outline: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* Animations */
+        .slide-over { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="h-full overflow-hidden flex text-gray-100">
+
+    <!-- SIDEBAR (Glass Panel) -->
+    <div class="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 glass-panel z-50">
+        <div class="flex-1 flex flex-col min-h-0">
+            <div class="flex items-center h-20 flex-shrink-0 px-6 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="text-xl font-bold text-white tracking-wide">Nexus<span class="text-indigo-400">CRM</span></span>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col overflow-y-auto py-6 px-4 space-y-2">
+                <p class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Principal</p>
+                <a href="#" class="bg-indigo-600/20 text-indigo-300 group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl border border-indigo-500/30 shadow-sm transition-all hover:bg-indigo-600/30">
+                    <svg class="mr-3 flex-shrink-0 h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Suivi des Deals
+                </a>
+                <a href="#" class="text-gray-400 hover:bg-white/5 hover:text-white group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all opacity-50 cursor-not-allowed">
+                    <svg class="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    Base Clients
+                </a>
+            </div>
+            
+            <!-- Connection Status -->
+            <div class="p-4 border-t border-white/5 bg-black/20">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse mr-3"></div>
+                    <div>
+                        <p class="text-xs font-medium text-white">Système Connecté</p>
+                        <p class="text-[10px] text-gray-500">API Google Sync v2.4</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="md:pl-72 flex flex-col flex-1 h-full overflow-hidden relative">
+        
+        <!-- Background Elements (Orbs) -->
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-72 h-72 bg-indigo-600/20 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <!-- Topbar -->
+        <div class="h-20 flex items-center justify-between px-8 z-10">
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">Tableau de Bord</h1>
+                <p class="text-xs text-indigo-300 mt-0.5">Vue d'ensemble de vos performances</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="loading-indicator" class="hidden px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Synchronisation...
+                </div>
+                <button onclick="openSlideOver()" class="group relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-500 hover:to-purple-500 focus:outline-none shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50">
+                    <svg class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    Nouveau Deal
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto px-8 pb-8 z-10 custom-scroll">
+            
+            <!-- KPIs Cards -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8 fade-in">
+                <!-- Total -->
+                <div class="glass rounded-2xl p-6 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <dt class="text-sm font-medium text-indigo-200">Total Deals</dt>
+                    <dd class="mt-2 text-4xl font-bold text-white" id="metric-total">0</dd>
+                    <div class="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-white/50 w-3/4 rounded-full"></div>
+                    </div>
+                </div>
+                <!-- Follow Up -->
+                <div class="glass rounded-2xl p-6 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <dt class="text-sm font-medium text-indigo-200">À Relancer (Urgence)</dt>
+                    <dd class="mt-2 text-4xl font-bold text-indigo-400" id="metric-followup">0</dd>
+                    <div class="mt-4 h-1 w-full bg-indigo-500/20 rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-500 w-1/2 rounded-full"></div>
+                    </div>
+                </div>
+                <!-- Closés -->
+                <div class="glass rounded-2xl p-6 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <dt class="text-sm font-medium text-emerald-200" id="metric-closed-label">Closés (Win)</dt>
+                    <dd class="mt-2 text-4xl font-bold text-emerald-400" id="metric-closed">0</dd>
+                    <div class="mt-4 h-1 w-full bg-emerald-500/20 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 w-full rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Data Panel -->
+            <div class="glass rounded-2xl overflow-hidden flex flex-col h-[calc(100%-180px)] min-h-[500px] fade-in" style="animation-delay: 0.1s;">
+                
+                <!-- Filters Header -->
+                <div class="px-6 py-4 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/5">
+                    <div class="flex-1 flex flex-col md:flex-row gap-4">
+                        <select id="filter-month" class="glass-input h-10 rounded-lg px-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
+                            <option value="current" class="bg-slate-800">📅 Mois en cours</option>
+                            <option value="all" class="bg-slate-800">Tout l'historique</option>
+                        </select>
+
+                        <select id="filter-status" class="glass-input h-10 rounded-lg px-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
+                            <option value="all" class="bg-slate-800">Tous les Statuts</option>
+                            <option value="followup" class="bg-slate-800">À Relancer ⚡</option>
+                            <option value="ghost" class="bg-slate-800">Ghost 👻</option>
+                            <option value="closed" class="bg-slate-800">Closés 💰</option>
+                            <option value="nonclosed" class="bg-slate-800">Perdus ❌</option>
+                        </select>
+
+                        <select id="filter-source" class="glass-input h-10 rounded-lg px-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
+                            <option value="all" class="bg-slate-800">Toutes Sources</option>
+                            <option value="Marketing" class="bg-slate-800">Marketing</option>
+                            <option value="Setting" class="bg-slate-800">Setting</option>
+                            <option value="Prise de rdv" class="bg-slate-800">Prise de RDV</option>
+                            <option value="Autre" class="bg-slate-800">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <button id="reset-filters" class="text-xs text-indigo-300 hover:text-white transition-colors flex items-center px-3 py-2 rounded-lg hover:bg-white/5">
+                        <svg class="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset
+                    </button>
+                </div>
+
+                <!-- Table Content -->
+                <div class="flex-1 overflow-auto relative">
+                    <div id="loading-message" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm z-20">
+                        <div class="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin mb-4"></div>
+                        <p class="text-indigo-200 text-sm font-medium">Chargement des données...</p>
+                    </div>
+                    
+                    <div id="error-message" class="hidden m-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-sm text-center"></div>
+                    
+                    <table class="min-w-full divide-y divide-white/5">
+                        <thead class="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-200 uppercase tracking-wider">Prospect</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-200 uppercase tracking-wider">Date RDV</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-200 uppercase tracking-wider">Offre</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-200 uppercase tracking-wider">Statut</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-indigo-200 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deals-table-body" class="divide-y divide-white/5 text-sm">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="no-data-message" class="hidden absolute inset-0 flex items-center justify-center text-gray-400">
+                        Aucun deal trouvé pour cette sélection.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 opacity-50 hover:opacity-100 transition-opacity">
+                <details>
+                    <summary class="text-[10px] text-gray-500 cursor-pointer select-none">DEBUG CONSOLE</summary>
+                    <pre id="debug-console" class="mt-2 bg-black/50 text-green-500/80 p-3 rounded-lg text-[10px] font-mono border border-white/5">System Ready.</pre>
+                </details>
+            </div>
+        </main>
+    </div>
+
+    <!-- SLIDE-OVER (Glass Style) -->
+    <div id="slide-over-container" class="relative z-50 hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+        <div id="slide-over-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0"></div>
+
+        <div class="fixed inset-0 overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden">
+                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                    <div id="slide-over-panel" class="pointer-events-auto w-screen max-w-md transform transition-transform translate-x-full">
+                        <div class="flex h-full flex-col overflow-y-scroll bg-slate-900 border-l border-white/10 shadow-2xl custom-scroll">
+                            
+                            <!-- Header -->
+                            <div class="px-6 py-6 border-b border-white/10 bg-white/5">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-bold text-white" id="slide-over-title">Nouveau Deal</h2>
+                                    <button onclick="closeSlideOver()" class="text-gray-400 hover:text-white transition-colors">
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Form -->
+                            <form id="deal-form" class="flex flex-1 flex-col">
+                                <div class="flex-1 px-6 py-6 space-y-6">
+                                    
+                                    <!-- Inputs Group -->
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-indigo-300 mb-1">Prospect <span class="text-red-400">*</span></label>
+                                            <input type="text" id="nomPrenom" required class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Nom complet">
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-indigo-300 mb-1">Source</label>
+                                                <select id="source" required class="glass-input block w-full rounded-lg px-3 py-2 text-sm">
+                                                    <option value="Marketing" class="bg-slate-800">Marketing</option>
+                                                    <option value="Setting" class="bg-slate-800">Setting</option>
+                                                    <option value="Prise de rdv" class="bg-slate-800">Prise de RDV</option>
+                                                    <option value="Autre" class="bg-slate-800">Autre</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-indigo-300 mb-1">Entrepreneur (F)</label>
+                                                <input type="text" id="entrepreneur" class="glass-input block w-full rounded-lg px-3 py-2 text-sm">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-indigo-300 mb-1">Date RDV</label>
+                                            <input type="date" id="dateRDV" class="glass-input block w-full rounded-lg px-3 py-2 text-sm [color-scheme:dark]">
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <input type="email" id="email" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Email">
+                                            <input type="text" id="numero" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Téléphone">
+                                        </div>
+
+                                        <input type="url" id="enregistrementCall" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Lien enregistrement (https://...)">
+                                    </div>
+
+                                    <!-- Status Flags -->
+                                    <div class="py-4 border-t border-b border-white/10">
+                                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Statut</h3>
+                                        <div class="space-y-3">
+                                            <!-- Main Action -->
+                                            <label class="flex items-center p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 cursor-pointer hover:bg-emerald-500/20 transition-colors">
+                                                <input id="close" type="checkbox" class="h-4 w-4 rounded border-emerald-500 text-emerald-500 focus:ring-offset-0 bg-transparent">
+                                                <span class="ml-3 text-sm font-bold text-emerald-400">✅ Deal Closé (Win)</span>
+                                            </label>
+
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <label class="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer">
+                                                    <input id="aFollowUp" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-transparent text-indigo-500">
+                                                    <span class="ml-2 text-sm text-indigo-300">À Relancer</span>
+                                                </label>
+                                                <label class="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer">
+                                                    <input id="ghost" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-transparent text-yellow-500">
+                                                    <span class="ml-2 text-sm text-yellow-300">Ghost</span>
+                                                </label>
+                                                <label class="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer">
+                                                    <input id="nonClose" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-transparent text-red-500">
+                                                    <span class="ml-2 text-sm text-red-300">Perdu</span>
+                                                </label>
+                                                <label class="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer">
+                                                    <input id="compta" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-transparent text-teal-500">
+                                                    <span class="ml-2 text-sm text-teal-300">Compta</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Closing Details (Conditional) -->
+                                    <div id="closing-details" class="hidden p-4 rounded-xl bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 border border-emerald-500/30 space-y-3">
+                                        <div class="text-xs font-bold text-emerald-400 uppercase">Détails de la Vente</div>
+                                        <div>
+                                            <select id="formation" class="glass-input block w-full rounded-lg px-3 py-2 text-sm">
+                                                <option value="" class="bg-slate-800">Choisir Produit...</option>
+                                                <option value="Produit B 4000" class="bg-slate-800">Produit B (4000€)</option>
+                                                <option value="Produit A 2000" class="bg-slate-800">Produit A (2000€)</option>
+                                                <option value="N/A" class="bg-slate-800">Autre</option>
+                                            </select>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <input type="number" id="prix" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Prix (€)">
+                                            <input type="number" id="mensualite" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Mensualité">
+                                        </div>
+                                        <select id="typePaiement" class="glass-input block w-full rounded-lg px-3 py-2 text-sm">
+                                            <option value="" class="bg-slate-800">Paiement...</option>
+                                            <option value="CB" class="bg-slate-800">Carte Bancaire</option>
+                                            <option value="Virement" class="bg-slate-800">Virement</option>
+                                            <option value="3x" class="bg-slate-800">3 Fois</option>
+                                            <option value="Intégral" class="bg-slate-800">Intégral</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Comments -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-indigo-300 mb-1">Note / Commentaire</label>
+                                        <textarea id="newComment" rows="3" class="glass-input block w-full rounded-lg px-3 py-2 text-sm" placeholder="Ajouter une note..."></textarea>
+                                        <div id="comment-history" class="mt-3 hidden p-3 bg-black/30 rounded border border-white/5 text-xs text-gray-400 max-h-32 overflow-y-auto"></div>
+                                    </div>
+
+                                </div>
+                                
+                                <!-- Footer Actions -->
+                                <div class="px-6 py-4 border-t border-white/10 bg-white/5 flex justify-end gap-3">
+                                    <button type="button" onclick="closeSlideOver()" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Annuler</button>
+                                    <button type="submit" id="submit-text" class="px-6 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 transition-all">Enregistrer</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-slate-900 border border-white/10 text-left shadow-2xl transition-all sm:w-full sm:max-w-lg glass-panel">
+                    <div class="px-6 py-5 border-b border-white/10">
+                        <h3 class="text-lg font-medium leading-6 text-white">Historique Complet</h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="modal-history-content" class="text-sm text-gray-300 bg-black/30 p-4 rounded-xl max-h-80 overflow-y-auto border border-white/5"></div>
+                    </div>
+                    <div class="px-6 py-4 bg-white/5 flex justify-end">
+                        <button type="button" onclick="document.getElementById('history-modal').classList.add('hidden')" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIC (Identique à la v2 mais adaptée aux classes CSS) ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwJjpT47S5CcDklTn79vPNTbpkvcOR00JlzdjBip_CmIcq2j3f4KmTYKX_PqI3Gg41/exec'; 
+
+        let allDealsCache = []; 
+        let editingId = null; 
+
+        // DOM Elements
+        const dealsTableBody = document.getElementById('deals-table-body');
+        const dealForm = document.getElementById('deal-form');
+        const slideOverTitle = document.getElementById('slide-over-title');
+        const submitText = document.getElementById('submit-text');
+        
+        const slideOverContainer = document.getElementById('slide-over-container');
+        const slideOverBackdrop = document.getElementById('slide-over-backdrop');
+        const slideOverPanel = document.getElementById('slide-over-panel');
+
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingMessage = document.getElementById('loading-message');
+        const noDataMessage = document.getElementById('no-data-message');
+        const errorMessage = document.getElementById('error-message');
+        
+        const metricTotal = document.getElementById('metric-total');
+        const metricFollowUp = document.getElementById('metric-followup');
+        const metricClosed = document.getElementById('metric-closed');
+        
+        const filterMonth = document.getElementById('filter-month'); 
+        const filterStatus = document.getElementById('filter-status');
+        const filterSource = document.getElementById('filter-source');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        
+        const newCommentField = document.getElementById('newComment');
+        const historyModal = document.getElementById('history-modal');
+        const modalHistoryContent = document.getElementById('modal-history-content');
+        const closeCheckbox = document.getElementById('close');
+        const closingDetailsDiv = document.getElementById('closing-details');
+        const debugConsole = document.getElementById('debug-console');
+
+        // Functions
+        function openSlideOver(isEdit = false) {
+            slideOverContainer.classList.remove('hidden');
+            setTimeout(() => {
+                slideOverBackdrop.classList.remove('opacity-0');
+                slideOverPanel.classList.remove('translate-x-full');
+            }, 10);
+            if (!isEdit) {
+                resetForm();
+                slideOverTitle.textContent = "Nouveau Deal";
+                submitText.textContent = "Enregistrer";
+            }
+        }
+
+        function closeSlideOver() {
+            slideOverBackdrop.classList.add('opacity-0');
+            slideOverPanel.classList.add('translate-x-full');
+            setTimeout(() => slideOverContainer.classList.add('hidden'), 300);
+        }
+
+        function toggleClosingDetails() {
+            if (closeCheckbox.checked) closingDetailsDiv.classList.remove('hidden');
+            else closingDetailsDiv.classList.add('hidden');
+        }
+        
+        closeCheckbox.addEventListener('change', toggleClosingDetails);
+
+        function resetForm() {
+            dealForm.reset();
+            editingId = null;
+            toggleClosingDetails();
+            newCommentField.placeholder = 'Ajouter une note...';
+            document.getElementById('comment-history').classList.add('hidden');
+        }
+
+        async function fetchAppsScript(action, data = null) {
+            const url = APPS_SCRIPT_URL + (action === 'READ' ? '?action=READ' : '');
+            debugConsole.textContent = `> ${action}...`;
+            
+            if (action !== 'READ') {
+                submitText.disabled = true;
+                submitText.innerHTML = `Traitement...`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: action === 'READ' ? 'GET' : 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: action !== 'READ' ? JSON.stringify({ action, data }) : null,
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const result = await response.json();
+                
+                debugConsole.textContent = `> ${action} OK`;
+                
+                if (!result.success) throw new Error(result.error || result.message);
+                return result;
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.textContent = `Erreur: ${error.message}`;
+                errorMessage.classList.remove('hidden');
+                return { success: false, error: error.message };
+            } finally {
+                if (action !== 'READ') {
+                    submitText.disabled = false;
+                    submitText.textContent = "Enregistrer";
+                }
+            }
+        }
+
+        async function loadDeals() {
+            loadingMessage.classList.remove('hidden');
+            loadingIndicator.classList.remove('hidden');
+            
+            const result = await fetchAppsScript('READ');
+            
+            loadingMessage.classList.add('hidden');
+            loadingIndicator.classList.add('hidden');
+
+            if (result.success) {
+                allDealsCache = (result.deals || []).filter(d => d.nomPrenom && d.nomPrenom.toString().trim() !== "");
+                populateMonthFilter();
+                applyFiltersAndRender();
+            }
+        }
+
+        function populateMonthFilter() {
+            const currentVal = filterMonth.value;
+            filterMonth.innerHTML = '<option value="current" class="bg-slate-800">📅 Mois en cours</option><option value="all" class="bg-slate-800">Tout l\'historique</option>';
+            const monthsSet = new Set();
+            
+            allDealsCache.forEach(deal => {
+                if (deal.dateRDV) {
+                    const date = new Date(deal.dateRDV);
+                    if (!isNaN(date)) {
+                        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        monthsSet.add(key);
+                    }
+                }
+            });
+            
+            const sortedMonths = Array.from(monthsSet).sort().reverse();
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const label = new Date(year, month - 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+                const option = document.createElement('option');
+                option.value = monthKey;
+                option.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+                option.className = "bg-slate-800";
+                filterMonth.appendChild(option);
+            });
+            
+            filterMonth.value = currentVal;
+        }
+
+        function checkMonthFilter(dealDateString, filterValue) {
+            if (!dealDateString) return false;
+            const dealDate = new Date(dealDateString);
+            const now = new Date();
+            if (filterValue === 'current') return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
+            else if (filterValue === 'all') return true;
+            else {
+                const [filterYear, filterMonth] = filterValue.split('-');
+                return dealDate.getFullYear() == filterYear && (dealDate.getMonth() + 1) == filterMonth;
+            }
+        }
+
+        function applyFiltersAndRender() {
+            let filteredDeals = [...allDealsCache];
+            const monthVal = filterMonth.value;
+            const statusVal = filterStatus.value;
+            const sourceVal = filterSource.value;
+
+            if (monthVal !== 'all') filteredDeals = filteredDeals.filter(deal => checkMonthFilter(deal.dateRDV, monthVal));
+            if (statusVal !== 'all') {
+                filteredDeals = filteredDeals.filter(deal => {
+                    switch (statusVal) {
+                        case 'followup': return deal.aFollowUp;
+                        case 'ghost': return deal.ghost;
+                        case 'closed': return deal.close;
+                        case 'nonclosed': return deal.nonClose;
+                        default: return true;
+                    }
+                });
+            }
+            if (sourceVal !== 'all') filteredDeals = filteredDeals.filter(deal => deal.source === sourceVal);
+            
+            filteredDeals.sort((a, b) => {
+                const dateA = a.dateRDV ? new Date(a.dateRDV) : new Date(0);
+                const dateB = b.dateRDV ? new Date(b.dateRDV) : new Date(0);
+                return dateB - dateA;
+            });
+
+            updateDashboardMetrics(filteredDeals);
+            renderDeals(filteredDeals);
+            
+            if (filteredDeals.length === 0) noDataMessage.classList.remove('hidden');
+            else noDataMessage.classList.add('hidden');
+        }
+
+        function updateDashboardMetrics(deals) {
+            metricTotal.textContent = deals.length;
+            metricFollowUp.textContent = deals.filter(l => l.aFollowUp).length;
+            metricClosed.textContent = deals.filter(l => l.close).length;
+        }
+
+        function renderDeals(deals) {
+            dealsTableBody.innerHTML = '';
+            
+            deals.forEach(deal => {
+                const dateObj = deal.dateRDV ? new Date(deal.dateRDV) : null;
+                const isPast = dateObj ? dateObj < new Date().setHours(0,0,0,0) : false;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/5 transition-colors group';
+
+                let statusBadge = '';
+                if (deal.close) statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Gagné</span>`;
+                else if (deal.aFollowUp) statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">À Relancer</span>`;
+                else if (deal.ghost) statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Ghost</span>`;
+                else if (deal.nonClose) statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">Perdu</span>`;
+                else statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/10 text-gray-400 border border-white/10">Nouveau</span>`;
+
+                const dateDisplay = dateObj 
+                    ? `<div class="text-sm text-gray-200">${dateObj.toLocaleDateString('fr-FR')}</div>
+                       ${isPast && !deal.close ? '<div class="text-[10px] text-red-400 font-bold mt-0.5">⚠️ Retard</div>' : ''}`
+                    : '<span class="text-gray-600">-</span>';
+
+                const productDisplay = deal.formation 
+                    ? `<div class="text-sm text-white">${deal.formation}</div>
+                       ${deal.prix ? `<div class="text-xs text-indigo-300 font-mono mt-0.5">${deal.prix.toLocaleString('fr-FR')} €</div>` : ''}` 
+                    : '<span class="text-gray-600">-</span>';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div>
+                            <div class="text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">${deal.nomPrenom}</div>
+                            <div class="text-xs text-gray-500">${deal.source}</div>
+                            ${deal.entrepreneur ? `<div class="mt-1 text-[10px] uppercase tracking-wide text-indigo-400 bg-indigo-900/30 px-1.5 py-0.5 rounded inline-block border border-indigo-500/20">${deal.entrepreneur}</div>` : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">${dateDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${productDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="showHistoryModal('${deal.id}')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all" title="Historique">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
+                            <button onclick="editDeal('${deal.id}')" class="p-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 transition-all">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7-10l5 5m-5-5L3 17" /></svg>
+                            </button>
+                            <button onclick="deleteDeal('${deal.id}', '${deal.nomPrenom.replace(/'/g, "\\'")}')" class="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                dealsTableBody.appendChild(tr);
+            });
+        }
+
+        dealForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const dealData = {
+                id: editingId,
+                nomPrenom: document.getElementById('nomPrenom').value.trim(),
+                source: document.getElementById('source').value,
+                entrepreneur: document.getElementById('entrepreneur').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                numero: document.getElementById('numero').value.trim(),
+                dateRDV: document.getElementById('dateRDV').value,
+                ghost: document.getElementById('ghost').checked,
+                aFollowUp: document.getElementById('aFollowUp').checked,
+                nonClose: document.getElementById('nonClose').checked,
+                close: document.getElementById('close').checked,
+                formation: document.getElementById('formation').value,
+                prix: parseFloat(document.getElementById('prix').value) || 0,
+                typePaiement: document.getElementById('typePaiement').value,
+                mensualite: parseFloat(document.getElementById('mensualite').value) || 0,
+                compta: document.getElementById('compta').checked,
+                enregistrementCall: document.getElementById('enregistrementCall').value.trim(),
+                newCommentText: editingId ? newCommentField.value.trim() : null,
+                commentaireHistory: !editingId ? newCommentField.value.trim() : null 
+            };
+
+            let action = editingId ? 'UPDATE' : 'CREATE';
+            const result = await fetchAppsScript(action, dealData);
+
+            if (result.success) {
+                closeSlideOver();
+                await loadDeals();
+            }
+        });
+
+        window.editDeal = async function(id) {
+            const deal = allDealsCache.find(d => d.id === id);
+            if (!deal) return;
+
+            document.getElementById('nomPrenom').value = deal.nomPrenom || '';
+            document.getElementById('source').value = deal.source || '';
+            document.getElementById('email').value = deal.email || '';
+            document.getElementById('numero').value = deal.numero || '';
+            document.getElementById('dateRDV').value = deal.dateRDV || '';
+            document.getElementById('entrepreneur').value = deal.entrepreneur || '';
+            document.getElementById('ghost').checked = deal.ghost || false;
+            document.getElementById('aFollowUp').checked = deal.aFollowUp || false;
+            document.getElementById('nonClose').checked = deal.nonClose || false;
+            document.getElementById('close').checked = deal.close || false;
+            document.getElementById('formation').value = deal.formation || '';
+            document.getElementById('prix').value = deal.prix || '';
+            document.getElementById('typePaiement').value = deal.typePaiement || '';
+            document.getElementById('mensualite').value = deal.mensualite || '';
+            document.getElementById('compta').checked = deal.compta || false;
+            document.getElementById('enregistrementCall').value = deal.enregistrementCall || '';
+            
+            toggleClosingDetails();
+            newCommentField.value = '';
+            
+            const historyDiv = document.getElementById('comment-history');
+            if (deal.commentaireHistory) {
+                document.getElementById('comment-history').textContent = deal.commentaireHistory;
+                historyDiv.classList.remove('hidden');
+            } else {
+                historyDiv.classList.add('hidden');
+            }
+
+            openSlideOver(true);
+        }
+
+        window.deleteDeal = async function(id, name) {
+            if(!confirm(`Supprimer ${name} ?`)) return;
+            const result = await fetchAppsScript('DELETE', { id });
+            if (result.success) await loadDeals();
+        }
+
+        window.showHistoryModal = function(id) {
+            const deal = allDealsCache.find(l => l.id === id);
+            if (!deal) return;
+            modalHistoryContent.textContent = deal.commentaireHistory || 'Aucune note.';
+            historyModal.classList.remove('hidden');
+        }
+
+        // Listeners
+        filterMonth.addEventListener('change', applyFiltersAndRender);
+        filterStatus.addEventListener('change', applyFiltersAndRender);
+        filterSource.addEventListener('change', applyFiltersAndRender);
+        resetFiltersBtn.addEventListener('click', () => {
+            filterMonth.value = 'current';
+            filterStatus.value = 'all';
+            filterSource.value = 'all';
+            applyFiltersAndRender();
+        });
+
+        // Init
+        loadDeals();
+    </script>
+</body>
+</html>
