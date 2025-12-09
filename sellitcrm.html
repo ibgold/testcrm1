@@ -38,7 +38,8 @@
             <form id="login-form" class="space-y-4 text-left">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Identifiant</label><input type="text" id="login-user" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all" placeholder="Votre pseudo"></div>
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mot de passe</label><input type="password" id="login-pass" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all" placeholder="••••••••"></div>
-                <div id="login-error" class="text-danger text-xs hidden text-center font-bold bg-red-50 p-2 rounded border border-red-100"></div>
+                <!-- Zone d'erreur visible -->
+                <div id="login-error" class="text-white bg-red-500 p-3 rounded text-xs hidden text-center font-bold"></div>
                 <button type="submit" id="login-btn" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg">Se Connecter</button>
             </form>
         </div>
@@ -110,7 +111,7 @@
         </div>
     </div>
 
-    <!-- SLIDE OVER -->
+    <!-- SLIDE OVER (FORM) -->
     <div id="slide-over-container" class="hidden fixed inset-0 z-50 overflow-hidden">
         <div class="absolute inset-0 bg-primary/40 backdrop-blur-sm" onclick="closeSlideOver()"></div>
         <div id="slide-over-panel" class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full">
@@ -218,25 +219,30 @@
                 try {
                     result = JSON.parse(text);
                 } catch(parseError) {
-                    throw new Error("Réponse serveur invalide (HTML?). Le script a peut-être planté ou demande une autorisation. " + text.substring(0, 100));
+                    // SI C'EST DU HTML C'EST SOUVENT UNE ERREUR APPS SCRIPT
+                    // On affiche le début du texte pour aider au diagnostic
+                    const errorSnippet = text.substring(0, 300);
+                    alert("ERREUR CRITIQUE SERVEUR :\nLe script a renvoyé du HTML au lieu de JSON.\nCela signifie généralement une erreur de syntaxe dans Code.gs ou un déploiement non mis à jour.\n\nDétail: " + errorSnippet);
+                    throw new Error("Réponse serveur invalide (HTML).");
                 }
                 
                 if (result.success) {
-                    localStorage.setItem('crm_sheetId', result.sheetId || 'ALL'); // Default to ALL if superadmin
+                    localStorage.setItem('crm_sheetId', result.sheetId || 'ALL'); 
                     localStorage.setItem('crm_user', result.user.name);
                     localStorage.setItem('sellit_auth', JSON.stringify(result));
                     
                     currentSheetId = result.sheetId || 'ALL';
                     currentUserName = result.user.name;
-                    // checkAuth was renamed to initAuth to fix reference error.
-                    // But initAuth logic is slightly different (checks sellit_auth).
-                    // We can call initAuth here as storage is set.
                     initAuth();
                 } else {
+                    alert("ECHEC CONNEXION : " + (result.message || "Identifiants incorrects"));
                     err.textContent = result.message || "Identifiants incorrects";
                     err.classList.remove('hidden');
                 }
             } catch (e) {
+                if(!e.message.includes("Réponse serveur invalide")) {
+                     alert("ERREUR RÉSEAU/SCRIPT : " + e.message);
+                }
                 err.textContent = e.message;
                 err.classList.remove('hidden');
             } finally {
