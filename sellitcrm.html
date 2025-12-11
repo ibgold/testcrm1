@@ -12,24 +12,20 @@
         :root { color-scheme: dark; } .light { color-scheme: light; }
         body { font-family: 'Outfit', sans-serif; transition: background-color 0.3s, color 0.3s; }
         body.dark { background: #0f172a; color: #cbd5e1; } body.light { background: #f8fafc; color: #334155; }
-        .custom-scroll::-webkit-scrollbar { width: 8px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } .light .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         .glass-header { border-bottom: 1px solid; transition: all 0.3s; } .dark .glass-header { background: #1e293b; border-color: #334155; } .light .glass-header { background: #ffffff; border-color: #e2e8f0; }
-        .form-input { @apply block w-full rounded-md border-2 py-2.5 px-3 text-sm shadow-sm transition-all outline-none; }
-        .dark .form-input { @apply bg-slate-800 border-slate-600 text-white placeholder-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 hover:border-slate-500; }
-        .light .form-input { @apply bg-white border-slate-300 text-slate-800 placeholder-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 hover:border-slate-400; }
-        .form-group label { @apply block text-xs font-bold uppercase tracking-wide mb-1.5 ml-1 transition-colors; } .dark .form-group label { @apply text-slate-400; } .light .form-group label { @apply text-slate-500; }
-        .custom-checkbox-input { @apply sr-only; }
-        .custom-checkbox-box { @apply h-5 w-5 rounded border-2 flex items-center justify-center transition-all duration-200; }
-        .dark .custom-checkbox-box { @apply bg-slate-800 border-slate-500; } .light .custom-checkbox-box { @apply bg-white border-slate-400; }
-        .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-amber-500 border-amber-500 text-white; } .light .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-indigo-600 border-indigo-600 text-white; }
-        .status-card { @apply flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer shadow-sm select-none; }
-        .dark .status-card { @apply border-slate-700 bg-slate-800/40 hover:bg-slate-700 hover:border-slate-500; } .light .status-card { @apply border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200; }
+        .form-input { @apply block w-full rounded-lg border-0 ring-1 ring-inset py-2.5 px-3 text-sm shadow-sm transition-all outline-none bg-transparent; }
+        .dark .form-input { @apply ring-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-amber-500 focus:bg-slate-800; }
+        .light .form-input { @apply ring-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-600 focus:bg-white; }
+        .form-group label { @apply block text-[10px] font-bold uppercase tracking-wider mb-1.5 ml-1 transition-colors opacity-70; }
+        .status-pill { @apply px-3 py-2 rounded-lg text-xs font-bold border border-transparent transition-all cursor-pointer flex items-center justify-center gap-2 select-none opacity-60 hover:opacity-100 bg-slate-800 text-slate-400; }
+        .status-pill.active { @apply opacity-100 ring-2 ring-offset-2 ring-offset-slate-900; }
         .slide-over { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #slide-over-panel { transition: width 0.3s ease, max-width 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        #slide-over-panel { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#0f172a', secondary: '#1e293b', accent: '#f59e0b', accentLight: '#4f46e5' } } } }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#0f172a', secondary: '#1e293b', accent: '#f59e0b' } } } }
     </script>
 </head>
 <body class="h-full overflow-hidden font-medium dark">
@@ -148,13 +144,43 @@
 
                 <!-- VIEW: SETTINGS -->
                 <div id="view-settings" class="hidden space-y-8 fade-in">
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
-                        <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Configuration des Offres</h3><p class="text-xs text-slate-500">Ajoutez les produits et leurs prix par défaut.</p></div><button onclick="addSettingRow('products')" class="px-3 py-1.5 bg-amber-500 text-white rounded text-xs font-bold hover:bg-amber-600 transition-colors">+ Ajouter Produit</button></div>
-                        <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Organisation</th><th class="p-3 text-left">Nom du Produit / Offre</th><th class="p-3 text-left w-32">Prix (€)</th><th class="p-3 text-right w-16"></th></tr></thead><tbody id="settings-products-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+                    <!-- SECTION REGLES TARIFAIRES -->
+                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6 border-l-4 border-l-emerald-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold dark:text-white text-slate-800">⚡ Règles Automatiques (Calculateur)</h3>
+                                <p class="text-xs text-slate-500">Définissez les prix automatiquement selon le Produit et le Paiement.</p>
+                            </div>
+                            <button onclick="addSettingRow('rules')" class="px-3 py-1.5 bg-emerald-500 text-white rounded text-xs font-bold hover:bg-emerald-600 transition-colors">+ Nouvelle Règle</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600">
+                                    <tr>
+                                        <th class="p-3 text-left">Organisation</th>
+                                        <th class="p-3 text-left">Si Produit =</th>
+                                        <th class="p-3 text-left">Et Paiement =</th>
+                                        <th class="p-3 text-left w-24">Total (€)</th>
+                                        <th class="p-3 text-left w-24">Cash (€)</th>
+                                        <th class="p-3 text-left w-16">Mens.</th>
+                                        <th class="p-3 text-left w-16">Jour</th>
+                                        <th class="p-3 text-right w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="settings-rules-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
-                        <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Moyens de Paiement</h3><p class="text-xs text-slate-500">Liste des options de paiement disponibles.</p></div><button onclick="addSettingRow('payments')" class="px-3 py-1.5 bg-indigo-500 text-white rounded text-xs font-bold hover:bg-indigo-600 transition-colors">+ Ajouter Paiement</button></div>
-                        <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Organisation</th><th class="p-3 text-left">Nom du moyen de paiement</th><th class="p-3 text-right w-16"></th></tr></thead><tbody id="settings-payments-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
+                            <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Produits</h3><p class="text-xs text-slate-500">Liste de base des produits.</p></div><button onclick="addSettingRow('products')" class="px-3 py-1.5 bg-amber-500 text-white rounded text-xs font-bold hover:bg-amber-600 transition-colors">+ Ajouter</button></div>
+                            <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Org</th><th class="p-3 text-left">Nom</th><th class="p-3 text-left w-24">Prix Défaut</th><th class="p-3 text-right w-12"></th></tr></thead><tbody id="settings-products-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+                        </div>
+                        <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
+                            <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Paiements</h3><p class="text-xs text-slate-500">Options de paiement (3x, Comptant...).</p></div><button onclick="addSettingRow('payments')" class="px-3 py-1.5 bg-indigo-500 text-white rounded text-xs font-bold hover:bg-indigo-600 transition-colors">+ Ajouter</button></div>
+                            <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Org</th><th class="p-3 text-left">Nom</th><th class="p-3 text-right w-12"></th></tr></thead><tbody id="settings-payments-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+                        </div>
                     </div>
                     <div class="flex justify-end pt-4 border-t dark:border-slate-700 border-slate-200"><button onclick="saveSettings()" id="btn-save-settings" class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-500 shadow-lg transition-all">Sauvegarder la Configuration</button></div>
                 </div>
@@ -162,43 +188,62 @@
         </div>
     </div>
 
-    <!-- SLIDE OVER FORM -->
+    <!-- MODERN SLIDE OVER -->
     <div id="slide-over-container" class="hidden fixed inset-0 z-50 overflow-hidden">
         <div class="absolute inset-0 dark:bg-black/70 bg-slate-900/20 backdrop-blur-sm transition-opacity" onclick="closeSlideOver()"></div>
-        <div id="slide-over-panel" class="absolute inset-y-0 right-0 max-w-md w-full dark:bg-slate-900 bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full dark:border-l dark:border-slate-700">
-            <div class="px-8 py-6 border-b dark:border-slate-800 border-slate-200 flex justify-between items-center dark:bg-slate-900 bg-white"><div><h2 class="text-xl font-bold dark:text-white text-slate-800" id="slide-over-title">Deal Details</h2><p class="text-xs text-slate-400 mt-1">Informations du prospect</p></div><div class="flex items-center gap-3"><button onclick="toggleExpand()" class="dark:text-slate-400 text-slate-500 hover:text-amber-500 transition-colors p-2 rounded-full dark:hover:bg-white/5 hover:bg-slate-100"><i id="expand-icon" class="fa-solid fa-expand"></i></button><button onclick="closeSlideOver()" class="dark:text-slate-400 text-slate-500 dark:hover:text-white hover:text-slate-800 transition-colors p-2 rounded-full dark:hover:bg-white/5 hover:bg-slate-100"><i class="fa-solid fa-xmark text-lg"></i></button></div></div>
-            <form id="deal-form" class="flex-1 flex flex-col overflow-y-auto custom-scroll dark:bg-slate-900 bg-white">
-                <div class="px-8 py-6 space-y-8">
-                    <div class="space-y-6">
-                        <div class="form-group"><label>Prospect <span class="text-red-500">*</span></label><input type="text" id="nomPrenom" required class="form-input" placeholder="Nom Complet"></div>
-                        <div class="grid grid-cols-2 gap-4"><div class="form-group"><label>Source</label><select id="source" required class="form-input"><option class="dark:bg-slate-800">Marketing</option><option class="dark:bg-slate-800">Setting</option><option class="dark:bg-slate-800">Prise de rdv</option><option class="dark:bg-slate-800">Autre</option></select></div><div class="form-group"><label>Entrepreneur (F)</label><input type="text" id="entrepreneur" class="form-input" placeholder="Nom"></div></div>
-                        <div class="form-group"><label>Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div>
-                        <div class="grid grid-cols-2 gap-4"><div class="form-group"><label>Email</label><input type="email" id="email" class="form-input" placeholder="Email"></div><div class="form-group"><label>Téléphone</label><input type="text" id="numero" class="form-input" placeholder="Tel"></div></div>
-                        <div class="form-group"><label>Lien Call (URL)</label><input type="url" id="enregistrementCall" class="form-input" placeholder="https://..."></div>
-                    </div>
+        <div id="slide-over-panel" class="absolute inset-y-0 right-0 max-w-lg w-full dark:bg-slate-900 bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full dark:border-l dark:border-slate-800">
+            <div class="px-6 py-5 border-b dark:border-slate-800 border-slate-100 flex justify-between items-center dark:bg-slate-900 bg-white z-10">
+                <div class="flex items-center gap-4">
+                    <div id="prospect-avatar" class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">?</div>
+                    <div><h2 class="text-xl font-bold dark:text-white text-slate-800 leading-tight" id="slide-over-title">Nouveau Deal</h2><div class="flex items-center gap-2 mt-0.5"><button id="btn-quick-copy" class="text-[10px] uppercase font-bold tracking-wide text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"><i class="fa-regular fa-copy"></i> Copier Email</button></div></div>
+                </div>
+                <div class="flex items-center gap-2"><button onclick="toggleExpand()" class="h-9 w-9 rounded-full flex items-center justify-center dark:text-slate-400 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"><i id="expand-icon" class="fa-solid fa-expand"></i></button><button onclick="closeSlideOver()" class="h-9 w-9 rounded-full flex items-center justify-center dark:text-slate-400 text-slate-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+            </div>
 
-                    <div class="dark:bg-slate-800/50 bg-slate-50 rounded-xl p-5 border-2 dark:border-slate-700 border-slate-200">
-                        <label class="flex items-center cursor-pointer w-full p-3 dark:bg-emerald-500/10 bg-emerald-50 border-2 dark:border-emerald-500/30 border-emerald-200 rounded-lg hover:shadow-md transition-all mb-4 group"><input id="close" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-emerald-500 peer-checked:border-emerald-500"><i class="fa-solid fa-check text-xs text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-3 font-bold dark:text-emerald-400 text-emerald-800">✅ Deal Closé</span></label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="status-card group"><input id="aFollowUp" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-indigo-600 peer-checked:border-indigo-600"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-indigo-400 text-indigo-700 flex items-center gap-2"><i class="fa-solid fa-bolt"></i> Relance</span></label>
-                            <label class="status-card group"><input id="ghost" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-amber-500 peer-checked:border-amber-500"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-amber-500 text-amber-700 flex items-center gap-2"><i class="fa-solid fa-ghost"></i> Ghost</span></label>
-                            <label class="status-card group"><input id="nonClose" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-red-500 peer-checked:border-red-500"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-red-500 text-red-700 flex items-center gap-2"><i class="fa-solid fa-xmark"></i> Perdu</span></label>
-                            <label class="status-card group"><input id="cancelled" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-slate-500 peer-checked:border-slate-500"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-slate-400 text-slate-600 flex items-center gap-2"><i class="fa-solid fa-ban"></i> Annulé</span></label>
-                            <label class="status-card group"><input id="unqualified" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-orange-500 peer-checked:border-orange-500"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-orange-400 text-orange-600 flex items-center gap-2"><i class="fa-solid fa-user-slash"></i> Non Qualif</span></label>
-                            <label class="status-card group"><input id="rescheduled" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-blue-500 peer-checked:border-blue-500"><i class="fa-solid fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-2 text-xs font-semibold dark:text-blue-400 text-blue-600 flex items-center gap-2"><i class="fa-regular fa-calendar"></i> Reporté</span></label>
+            <form id="deal-form" class="flex-1 flex flex-col overflow-y-auto custom-scroll dark:bg-slate-900 bg-white relative">
+                <div class="px-6 py-6 space-y-8">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4"><div class="form-group col-span-2"><label>Nom du Prospect</label><input type="text" id="nomPrenom" required class="form-input text-lg font-semibold" placeholder="Ex: Jean Dupont" oninput="updateAvatar(this.value)"></div><div class="form-group"><label>Email</label><div class="relative"><input type="email" id="email" class="form-input pl-9" placeholder="jean@mail.com"><i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Téléphone</label><div class="relative"><input type="text" id="numero" class="form-input pl-9" placeholder="06 12 34 56 78"><i class="fa-solid fa-phone absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div><div class="form-group"><label>Source</label><select id="source" required class="form-input"><option class="dark:bg-slate-800">Marketing</option><option class="dark:bg-slate-800">Setting</option><option class="dark:bg-slate-800">Prise de rdv</option><option class="dark:bg-slate-800">Autre</option></select></div><div class="form-group col-span-2"><label>Replay / Lien Call</label><input type="url" id="enregistrementCall" class="form-input text-xs font-mono text-blue-400" placeholder="https://zoom.us/rec/..."></div><div class="hidden form-group"><label>Entrepreneur</label><input type="text" id="entrepreneur" class="form-input"></div></div>
+                    </div>
+                    <div class="pt-4 border-t dark:border-slate-800 border-slate-100"><label class="text-[10px] font-bold uppercase tracking-wider dark:text-slate-400 text-slate-500 mb-3 block">Statut du Deal</label><div class="hidden"><input id="close" type="checkbox"><input id="aFollowUp" type="checkbox"><input id="ghost" type="checkbox"><input id="nonClose" type="checkbox"><input id="cancelled" type="checkbox"><input id="unqualified" type="checkbox"><input id="rescheduled" type="checkbox"></div><div class="grid grid-cols-2 gap-2 mb-2"><div onclick="setDealStatus('aFollowUp')" id="btn-status-aFollowUp" class="status-pill hover:bg-indigo-500/10 hover:text-indigo-400 hover:border-indigo-500/50"><i class="fa-solid fa-bolt"></i> Relance</div><div onclick="setDealStatus('rescheduled')" id="btn-status-rescheduled" class="status-pill hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/50"><i class="fa-regular fa-calendar"></i> Reporté</div><div onclick="setDealStatus('ghost')" id="btn-status-ghost" class="status-pill hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/50"><i class="fa-solid fa-ghost"></i> Ghost</div><div onclick="setDealStatus('unqualified')" id="btn-status-unqualified" class="status-pill hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/50"><i class="fa-solid fa-user-slash"></i> Non Qualifié</div><div onclick="setDealStatus('nonClose')" id="btn-status-nonClose" class="status-pill hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50"><i class="fa-solid fa-xmark"></i> Perdu</div><div onclick="setDealStatus('cancelled')" id="btn-status-cancelled" class="status-pill hover:bg-slate-500/10 hover:text-slate-300 hover:border-slate-500/50"><i class="fa-solid fa-ban"></i> Annulé</div></div><div onclick="setDealStatus('close')" id="btn-status-close" class="status-pill w-full mt-2 py-3 bg-gradient-to-r from-emerald-900/50 to-emerald-800/50 border border-emerald-500/30 text-emerald-400 hover:from-emerald-600 hover:to-emerald-500 hover:text-white transition-all shadow-lg hover:shadow-emerald-500/20"><span class="text-sm font-bold uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> Deal Closé</span></div></div>
+                    
+                    <!-- SECTION CLOSING (Prop 2 & 3 Integration) -->
+                    <div id="closing-details" class="hidden space-y-4 pt-4 border-t border-emerald-500/30 fade-in">
+                        <div class="p-4 rounded-xl dark:bg-emerald-500/5 border border-emerald-500/20 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-trophy text-6xl text-emerald-500"></i></div>
+                            <div class="grid grid-cols-2 gap-4 relative z-10">
+                                <div class="form-group col-span-2">
+                                    <label class="text-emerald-500">Offre Vendue</label>
+                                    <select id="formation" class="form-input !bg-slate-900 !border-emerald-500/30 text-emerald-400 font-bold" onchange="autoFillPrice()"><option class="dark:bg-slate-800" value="">Choisir...</option></select>
+                                </div>
+                                <div class="form-group col-span-2">
+                                    <label class="text-emerald-500">Option de Paiement</label>
+                                    <select id="typePaiement" class="form-input !bg-slate-900 !border-emerald-500/30 text-emerald-100" onchange="autoFillPrice()"><option class="dark:bg-slate-800" value="">Choisir...</option></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-emerald-500">Valeur Contrat (€)</label> <!-- PROPOSITION 3: Libellé Clair -->
+                                    <input type="number" id="prix" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="2000" oninput="calcRest()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-emerald-500">Encaissement (T0)</label> <!-- PROPOSITION 3: Libellé Clair -->
+                                    <input type="number" id="mensualite" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="500" oninput="calcRest()">
+                                </div>
+                                
+                                <!-- NEW FIELDS INFO ONLY -->
+                                <div class="col-span-2 grid grid-cols-3 gap-2 border-t border-emerald-500/20 pt-2 mt-1">
+                                    <div class="form-group"><label class="text-slate-500">Reste</label><input type="text" id="reste" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
+                                    <div class="form-group"><label class="text-slate-500">Mens. à venir</label><input type="text" id="nbMens" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
+                                    <div class="form-group"><label class="text-slate-500">Jour Prélvt</label><input type="text" id="jour" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div id="closing-details" class="hidden space-y-4 p-4 rounded-xl dark:bg-emerald-900/10 bg-emerald-50 border-2 dark:border-emerald-500/20 border-emerald-100 fade-in">
-                        <div class="text-xs font-bold dark:text-emerald-500 text-emerald-700 uppercase tracking-wide flex items-center gap-2"><i class="fa-solid fa-coins"></i> Détails Vente</div>
-                        <div class="form-group"><label>Produit Vendu</label><select id="formation" class="form-input !bg-emerald-900/20 !border-emerald-500/30" onchange="autoFillPrice()"><option class="dark:bg-slate-800" value="">Produit...</option></select></div>
-                        <div class="grid grid-cols-2 gap-4"><div class="form-group"><label>Prix (€)</label><input type="number" id="prix" class="form-input !bg-emerald-900/20 !border-emerald-500/30" placeholder="Prix (€)"></div><div class="form-group"><label>Mensualité</label><input type="number" id="mensualite" class="form-input !bg-emerald-900/20 !border-emerald-500/30" placeholder="Mensualité"></div></div>
-                        <div class="form-group"><label>Moyen de Paiement</label><select id="typePaiement" class="form-input !bg-emerald-900/20 !border-emerald-500/30"><option class="dark:bg-slate-800" value="">Paiement...</option></select></div>
-                    </div>
-                    <div class="form-group"><label>Note / Commentaire</label><textarea id="newComment" rows="3" class="form-input resize-none" placeholder="Ajouter une note..."></textarea><div id="comment-history" class="mt-4 hidden p-3 dark:bg-black/40 bg-slate-50 rounded-lg border dark:border-slate-700 border-slate-200 text-xs dark:text-slate-400 text-slate-600 max-h-32 overflow-y-auto"></div></div>
+
+                    <div class="pt-2"><div class="form-group"><label>Notes & Commentaires</label><textarea id="newComment" rows="3" class="form-input resize-none bg-slate-50 dark:bg-slate-800/50" placeholder="Détails importants sur l'appel..."></textarea></div><div id="comment-history" class="mt-4 hidden p-3 dark:bg-black/40 bg-slate-100 rounded-lg border dark:border-slate-800 border-slate-200 text-xs dark:text-slate-300 text-slate-600 max-h-32 overflow-y-auto font-mono"></div></div>
                 </div>
-                <div class="p-6 border-t dark:border-slate-800 border-slate-200 flex justify-end gap-3 dark:bg-slate-900 bg-white sticky bottom-0">
-                    <button type="button" onclick="closeSlideOver()" class="px-5 py-2.5 rounded-xl text-sm font-bold dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">Annuler</button>
-                    <button type="submit" id="submit-text" class="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-lg shadow-amber-900/20 transition-all">Enregistrer</button>
+                <div class="p-6 border-t dark:border-slate-800 border-slate-200 flex justify-between gap-3 dark:bg-slate-900 bg-white sticky bottom-0 z-20">
+                    <button type="button" onclick="closeSlideOver()" class="px-5 py-3 rounded-xl text-sm font-bold dark:text-slate-500 dark:hover:text-slate-300 text-slate-400 hover:text-slate-600 transition-colors">Annuler</button>
+                    <button type="submit" id="submit-text" class="flex-1 px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-lg shadow-amber-900/20 transition-all flex justify-center items-center gap-2"><span>Enregistrer</span> <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </form>
         </div>
@@ -210,7 +255,6 @@
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzTCbYR2H4jsGfrZt60oxhmwgf8D_wS8QSgO4GggLoECqsPP9LctDITbWgb6oBZQh/exec'; 
         
-        // GLOBAL SCOPE
         window.switchView = function(viewId) { 
             ['dashboard', 'stats', 'settings'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden')); 
             document.getElementById(`view-${viewId}`).classList.remove('hidden'); 
@@ -228,218 +272,171 @@
             setTimeout(() => { document.getElementById('slide-over-panel').classList.remove('translate-x-full'); }, 10); 
             if (!isEdit) { 
                 document.getElementById('slide-over-title').textContent = "Nouveau Deal"; 
-                document.getElementById('submit-text').textContent = "Enregistrer"; 
+                document.getElementById('submit-text').innerHTML = "<span>Enregistrer</span> <i class='fa-solid fa-arrow-right'></i>"; 
             } 
         };
 
-        window.closeSlideOver = function() { 
-            document.getElementById('slide-over-panel').classList.add('translate-x-full'); 
-            setTimeout(() => { document.getElementById('slide-over-container').classList.add('hidden'); }, 300); 
+        window.closeSlideOver = function() { document.getElementById('slide-over-panel').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('slide-over-container').classList.add('hidden'); }, 300); };
+        window.toggleExpand = function() { const panel = document.getElementById('slide-over-panel'); const icon = document.getElementById('expand-icon'); if (panel.classList.contains('max-w-lg')) { panel.classList.remove('max-w-lg'); panel.classList.add('max-w-5xl'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } else { panel.classList.add('max-w-5xl'); panel.classList.remove('max-w-lg'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); } };
+
+        const statuses = ['aFollowUp', 'rescheduled', 'ghost', 'unqualified', 'nonClose', 'cancelled', 'close'];
+        window.setDealStatus = function(activeId) {
+            statuses.forEach(id => {
+                const checkbox = document.getElementById(id); if(checkbox) checkbox.checked = false;
+                const btn = document.getElementById('btn-status-' + id);
+                if(btn) {
+                    btn.classList.remove('active', 'bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500', 'bg-blue-500/20', 'text-blue-400', 'border-blue-500', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500', 'bg-orange-500/20', 'text-orange-400', 'border-orange-500', 'bg-red-500/20', 'text-red-400', 'border-red-500', 'bg-slate-500/20', 'text-slate-300', 'border-slate-500');
+                    if(id === 'close') { btn.classList.remove('from-emerald-600', 'to-emerald-500', 'text-white', 'shadow-emerald-500/40'); btn.classList.add('text-emerald-400'); }
+                }
+            });
+            if(activeId) {
+                const checkbox = document.getElementById(activeId); if(checkbox) checkbox.checked = true;
+                const btn = document.getElementById('btn-status-' + activeId);
+                if(btn) {
+                    btn.classList.add('active');
+                    if(activeId === 'aFollowUp') btn.classList.add('bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500');
+                    if(activeId === 'rescheduled') btn.classList.add('bg-blue-500/20', 'text-blue-400', 'border-blue-500');
+                    if(activeId === 'ghost') btn.classList.add('bg-amber-500/20', 'text-amber-400', 'border-amber-500');
+                    if(activeId === 'unqualified') btn.classList.add('bg-orange-500/20', 'text-orange-400', 'border-orange-500');
+                    if(activeId === 'nonClose') btn.classList.add('bg-red-500/20', 'text-red-400', 'border-red-500');
+                    if(activeId === 'cancelled') btn.classList.add('bg-slate-500/20', 'text-slate-300', 'border-slate-500');
+                    if(activeId === 'close') { btn.classList.remove('text-emerald-400'); btn.classList.add('from-emerald-600', 'to-emerald-500', 'text-white', 'shadow-emerald-500/40'); }
+                }
+            }
+            toggleClosing();
         };
 
-        window.toggleExpand = function() { 
-            const panel = document.getElementById('slide-over-panel'); const icon = document.getElementById('expand-icon'); 
-            if (panel.classList.contains('max-w-md')) { panel.classList.remove('max-w-md'); panel.classList.add('max-w-4xl'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
-            else { panel.classList.add('max-w-md'); panel.classList.remove('max-w-4xl'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); } 
-        };
+        window.updateAvatar = function(name) { const avatar = document.getElementById('prospect-avatar'); if(!name) { avatar.textContent = "?"; return; } const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase(); avatar.textContent = initials; }
+        document.getElementById('btn-quick-copy').addEventListener('click', (e) => { e.preventDefault(); const email = document.getElementById('email').value; if(email) { navigator.clipboard.writeText(email); alert('Email copié !'); } });
 
-        // --- CORE FORM LOGIC ---
         document.getElementById('deal-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const btn = document.getElementById('submit-text');
-            const originalText = btn.textContent;
-            btn.disabled = true; 
-            btn.textContent = "Traitement...";
-
+            const btn = document.getElementById('submit-text'); const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin'></i> Sauvegarde...";
             const dealData = {
-                id: editingId, // if null -> CREATE
-                source: document.getElementById('source').value,
-                nomPrenom: document.getElementById('nomPrenom').value,
-                email: document.getElementById('email').value,
-                numero: document.getElementById('numero').value,
-                dateRDV: document.getElementById('dateRDV').value,
-                entrepreneur: document.getElementById('entrepreneur').value,
-                
-                // Statuts
-                close: document.getElementById('close').checked,
-                aFollowUp: document.getElementById('aFollowUp').checked,
-                ghost: document.getElementById('ghost').checked,
-                nonClose: document.getElementById('nonClose').checked,
-                cancelled: document.getElementById('cancelled').checked,
-                unqualified: document.getElementById('unqualified').checked,
-                rescheduled: document.getElementById('rescheduled').checked,
-                
-                // Finances
-                formation: document.getElementById('formation').value,
-                prix: document.getElementById('prix').value,
-                typePaiement: document.getElementById('typePaiement').value,
-                mensualite: document.getElementById('mensualite').value,
-                
-                // Extra
-                enregistrementCall: document.getElementById('enregistrementCall').value,
-                newCommentText: document.getElementById('newComment').value
+                id: editingId, source: document.getElementById('source').value, nomPrenom: document.getElementById('nomPrenom').value, email: document.getElementById('email').value, numero: document.getElementById('numero').value, dateRDV: document.getElementById('dateRDV').value, entrepreneur: document.getElementById('entrepreneur').value,
+                close: document.getElementById('close').checked, aFollowUp: document.getElementById('aFollowUp').checked, ghost: document.getElementById('ghost').checked, nonClose: document.getElementById('nonClose').checked, cancelled: document.getElementById('cancelled').checked, unqualified: document.getElementById('unqualified').checked, rescheduled: document.getElementById('rescheduled').checked,
+                formation: document.getElementById('formation').value, prix: document.getElementById('prix').value, typePaiement: document.getElementById('typePaiement').value, mensualite: document.getElementById('mensualite').value,
+                // New Fields
+                reste: document.getElementById('reste').value, nbMens: document.getElementById('nbMens').value, jour: document.getElementById('jour').value,
+                enregistrementCall: document.getElementById('enregistrementCall').value, newCommentText: document.getElementById('newComment').value
             };
-            
-            // Backend Action Logic (Aligned with your existing script)
-            const action = editingId ? 'UPDATE' : 'CREATE';
-            
-            try {
-                // IMPORTANT: Your backend expects 'data' object nested
-                const res = await fetchAppsScript(action, { data: dealData });
-                
-                if(res.success) {
-                    closeSlideOver();
-                    loadDeals(); // Refresh
-                } else {
-                    alert("Erreur: " + res.message);
-                }
-            } catch(err) {
-                alert("Erreur réseau ou script: " + err.message);
-            } finally {
-                btn.disabled = false; 
-                btn.textContent = originalText;
-            }
+            try { const res = await fetchAppsScript(editingId ? 'UPDATE' : 'CREATE', { data: dealData }); if(res.success) { closeSlideOver(); loadDeals(); } else { alert("Erreur: " + res.message); } } catch(err) { alert("Erreur réseau: " + err.message); } finally { btn.disabled = false; btn.innerHTML = originalText; }
         });
 
         window.editDeal = function(id) { 
             const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id; 
-            document.getElementById('nomPrenom').value = d.nomPrenom || ''; 
-            document.getElementById('source').value = d.source || ''; 
-            document.getElementById('entrepreneur').value = d.entrepreneur || ''; 
-            document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : ''; 
-            document.getElementById('email').value = d.email || ''; 
-            document.getElementById('numero').value = d.numero || ''; 
-            document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
-            document.getElementById('close').checked = d.close; 
-            document.getElementById('aFollowUp').checked = d.aFollowUp; 
-            document.getElementById('ghost').checked = d.ghost; 
-            document.getElementById('nonClose').checked = d.nonClose; 
-            document.getElementById('cancelled').checked = d.cancelled||false; 
-            document.getElementById('unqualified').checked = d.unqualified||false; 
-            document.getElementById('rescheduled').checked = d.rescheduled||false; 
+            document.getElementById('nomPrenom').value = d.nomPrenom || ''; updateAvatar(d.nomPrenom); document.getElementById('source').value = d.source || ''; document.getElementById('entrepreneur').value = d.entrepreneur || ''; document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : ''; document.getElementById('email').value = d.email || ''; document.getElementById('numero').value = d.numero || ''; document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
+            setDealStatus(null); if(d.close) setDealStatus('close'); else if(d.aFollowUp) setDealStatus('aFollowUp'); else if(d.ghost) setDealStatus('ghost'); else if(d.nonClose) setDealStatus('nonClose'); else if(d.cancelled) setDealStatus('cancelled'); else if(d.unqualified) setDealStatus('unqualified'); else if(d.rescheduled) setDealStatus('rescheduled');
             toggleClosing(); 
-            document.getElementById('formation').value = d.formation || ''; 
-            document.getElementById('prix').value = d.prix || ''; 
-            document.getElementById('typePaiement').value = d.typePaiement || ''; 
-            document.getElementById('mensualite').value = d.mensualite || ''; 
-            const hist = document.getElementById('comment-history'); 
-            if(d.commentaireHistory) { 
-                hist.innerHTML = d.commentaireHistory.replace(/\n/g, '<br>'); 
-                hist.classList.remove('hidden'); 
-            } else { hist.classList.add('hidden'); }
-            document.getElementById('newComment').value = ''; 
-            document.getElementById('slide-over-title').textContent = `Modifier : ${d.nomPrenom}`; 
-            document.getElementById('submit-text').textContent = "Mettre à jour"; 
-            window.openSlideOver(true); 
+            document.getElementById('formation').value = d.formation || ''; document.getElementById('prix').value = d.prix || ''; document.getElementById('typePaiement').value = d.typePaiement || ''; document.getElementById('mensualite').value = d.mensualite || ''; 
+            // Fill new fields
+            document.getElementById('reste').value = d.reste || ''; document.getElementById('nbMens').value = d.nbMens || ''; document.getElementById('jour').value = d.jour || '';
+            
+            const hist = document.getElementById('comment-history'); hist.classList.remove('hidden'); if(d.commentaireHistory && d.commentaireHistory.trim() !== "") { hist.innerHTML = '<p class="text-[10px] font-bold uppercase text-slate-400 mb-2">📜 Historique des échanges :</p>' + d.commentaireHistory.replace(/\n/g, '<br>'); } else { hist.innerHTML = '<p class="text-[10px] font-bold uppercase text-slate-400 mb-2">📜 Historique des échanges :</p><p class="text-xs italic text-slate-500">Aucun historique disponible.</p>'; }
+            document.getElementById('newComment').value = ''; document.getElementById('slide-over-title').textContent = "Modifier le Deal"; document.getElementById('submit-text').innerHTML = "<span>Mettre à jour</span> <i class='fa-solid fa-rotate'></i>"; window.openSlideOver(true); 
         };
 
-        window.deleteDeal = async function(id) { 
-            if(!confirm("Supprimer ce deal définitivement ?")) return; 
-            // Corrected to match your backend DELETE signature
-            const res = await fetchAppsScript('DELETE', { data: { id: id } });
-            if(res.success) loadDeals();
-            else alert("Erreur suppression: " + res.message);
-        };
-        
+        window.deleteDeal = async function(id) { if(!confirm("Supprimer ce deal définitivement ?")) return; const res = await fetchAppsScript('DELETE', { data: { id: id } }); if(res.success) loadDeals(); else alert("Erreur suppression: " + res.message); };
         window.viewHistory = function(id) { const d = allDealsCache.find(x => x.id === id); document.getElementById('modal-history-content').innerHTML = (d.commentaireHistory || 'Aucune note').replace(/\n/g, '<br>'); document.getElementById('history-modal').classList.remove('hidden'); };
 
         window.addSettingRow = function(type) { 
             const defaultOrg = currentUser.org || ""; 
             if(type === 'products') { if(!globalConfig.products) globalConfig.products=[]; globalConfig.products.push({org: defaultOrg, name: 'Nouveau Produit', price: 0}); } 
             if(type === 'payments') { if(!globalConfig.payments) globalConfig.payments=[]; globalConfig.payments.push({org: defaultOrg, name: 'Nouveau Paiement'}); } 
+            if(type === 'rules') { if(!globalConfig.rules) globalConfig.rules=[]; globalConfig.rules.push({org: defaultOrg, product: '', payment: '', total: 0, cash: 0, nbMens: 0, jour: ''}); }
             renderSettingsView(); 
         };
-
-        window.removeSettingRow = function(type, idx) { 
-            if(type === 'prod') globalConfig.products.splice(idx, 1); 
-            if(type === 'pay') globalConfig.payments.splice(idx, 1); 
-            renderSettingsView(); 
-        };
-
-        window.updateConfigLocal = function(type, idx, field, val) { 
-            if(type === 'prod') globalConfig.products[idx][field] = val; 
-            if(type === 'pay') globalConfig.payments[idx][field] = val; 
-        };
-
-        window.saveSettings = async function() { 
-            const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; 
-            try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } 
-            btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; 
-        };
+        window.removeSettingRow = function(type, idx) { if(type==='prod') globalConfig.products.splice(idx,1); if(type==='pay') globalConfig.payments.splice(idx,1); if(type==='rules') globalConfig.rules.splice(idx,1); renderSettingsView(); };
+        window.updateConfigLocal = function(type, idx, field, val) { if(type==='prod') globalConfig.products[idx][field]=val; if(type==='pay') globalConfig.payments[idx][field]=val; if(type==='rules') globalConfig.rules[idx][field]=val; };
+        window.saveSettings = async function() { const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; };
 
         window.logout = function() { localStorage.clear(); location.reload(); };
+        const themeToggleBtn = document.getElementById('theme-toggle'); function initTheme() { if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage))) { document.body.classList.add('dark'); } else { document.body.classList.add('light'); } } themeToggleBtn.addEventListener('click', function() { if (document.body.classList.contains('dark')) { document.body.classList.remove('dark'); document.body.classList.add('light'); localStorage.setItem('color-theme', 'light'); } else { document.body.classList.add('dark'); localStorage.setItem('color-theme', 'dark'); } }); initTheme();
 
-        // THEME TOGGLE
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        function initTheme() {
-            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage))) {
-                document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark');
-            } else {
-                document.body.classList.add('light'); document.body.classList.remove('dark'); document.documentElement.classList.remove('dark');
-            }
-        }
-        themeToggleBtn.addEventListener('click', function() {
-            if (document.body.classList.contains('dark')) {
-                document.body.classList.remove('dark'); document.body.classList.add('light'); document.documentElement.classList.remove('dark');
-                localStorage.setItem('color-theme', 'light');
-            } else {
-                document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark');
-                localStorage.setItem('color-theme', 'dark');
-            }
-        });
-        initTheme();
-
-        let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let currentUserName = localStorage.getItem('crm_user'); let superAdminData = null; let availableSheets = []; let editingId = null; let globalConfig = { products: [], payments: [] };
+        let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let globalConfig = { products: [], payments: [], rules: [] };
         async function fetchConfig() { try { const res = await fetchAppsScript('GET_CONFIG'); if(res.success) globalConfig = res.config; } catch(e) {} }
         
         function initAuth() { 
             const stored = localStorage.getItem('sellit_auth'); 
             if (stored) { 
                 const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; 
-                fetchConfig().then(() => populateFormDropdowns()); 
+                fetchConfig().then(() => { populateFormDropdowns(); }); 
                 if(currentUser.role === 'super_admin') { superAdminData = data.superAdminData || {}; setupSuperAdminSelector(); document.getElementById('nav-settings').classList.remove('hidden'); } 
                 else if(currentUser.role === 'manager' || currentUser.role === 'admin') { availableSheets = data.teamSheets || []; setupManagerSelector(availableSheets); document.getElementById('nav-settings').classList.remove('hidden'); } 
                 else { if (!currentSheetId || currentSheetId === 'null') { currentSheetId = currentUser.personalSheetId; localStorage.setItem('crm_sheetId', currentSheetId); } } 
                 showApp(); loadDeals(); 
-            } else { 
-                document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); 
-            } 
+            } else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); } 
         }
-        
         function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
+        document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const result = JSON.parse(await response.text()); if (result.success) { let targetSheet = result.user.personalSheetId; if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
         
-        document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const text = await response.text(); let result; try { result = JSON.parse(text); } catch(parseError) { throw new Error("Erreur serveur (HTML)"); } if (result.success) { let targetSheet = result.user.personalSheetId; if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUserName = result.user.name; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
-        
-        async function fetchAppsScript(action, data = {}) { 
-            if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG') data.targetSheetId = currentSheetId; 
-            if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; 
-            
-            try { 
-                const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); 
-                const text = await response.text(); 
-                let result; try { result = JSON.parse(text); } catch(e) { throw new Error("Réponse serveur invalide"); } 
-                if (!result.success) throw new Error(result.error || result.message); 
-                return result; 
-            } catch (error) { 
-                console.error(error); return { success: false, error: error.message }; 
-            } 
-        }
-        
+        async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { console.error(error); return { success: false, error: error.message }; } }
         async function loadDeals() { if(!currentSheetId || currentSheetId === 'null') return; document.getElementById('loading-message').classList.remove('hidden'); try { const res = await fetchAppsScript('READ'); if (res.success) { allDealsCache = (res.deals || []).filter(d => d.nomPrenom && String(d.nomPrenom).trim() !== ""); renderAll(); } else { alert('Erreur chargement: ' + res.message); } } catch(e) {} document.getElementById('loading-message').classList.add('hidden'); }
         
         function populateFormDropdowns() {
             const prodSelect = document.getElementById('formation'); const paySelect = document.getElementById('typePaiement'); const prodVal = prodSelect.value; const payVal = paySelect.value;
-            prodSelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Sélectionner un produit...</option>'; 
-            paySelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Sélectionner un paiement...</option>';
+            prodSelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Choisir...</option>'; 
+            paySelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Choisir...</option>';
             const userOrg = (currentUser.org || "").trim().toLowerCase();
-            if(globalConfig.products) { globalConfig.products.forEach(p => { const pOrg = (p.org || "").trim().toLowerCase(); if(pOrg === userOrg || pOrg === "") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name + (p.price ? ` (${p.price}€)` : ''); opt.dataset.price = p.price; prodSelect.appendChild(opt); } }); }
-            if(globalConfig.payments) { globalConfig.payments.forEach(p => { const pOrg = (p.org || "").trim().toLowerCase(); if(pOrg === userOrg || pOrg === "") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name; paySelect.appendChild(opt); } }); }
+            if(globalConfig.products) { globalConfig.products.forEach(p => { if((p.org||"").trim().toLowerCase() === userOrg || p.org==="") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name + (p.price ? ` (${p.price}€)` : ''); opt.dataset.price = p.price; prodSelect.appendChild(opt); } }); }
+            if(globalConfig.payments) { globalConfig.payments.forEach(p => { if((p.org||"").trim().toLowerCase() === userOrg || p.org==="") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name; paySelect.appendChild(opt); } }); }
             if(prodVal) prodSelect.value = prodVal; if(payVal) paySelect.value = payVal;
         }
-        window.autoFillPrice = function() { const sel = document.getElementById('formation'); const opt = sel.options[sel.selectedIndex]; if(opt && opt.dataset.price) document.getElementById('prix').value = opt.dataset.price; }
+
+        // --- INTELLIGENCE DE PRIX (Prop 2) ---
+        window.calcRest = function() {
+            const t = safeFloat(document.getElementById('prix').value);
+            const c = safeFloat(document.getElementById('mensualite').value);
+            document.getElementById('reste').value = (t - c) > 0 ? (t - c) + ' €' : '-';
+        }
+
+        window.autoFillPrice = function() { 
+            const prodVal = document.getElementById('formation').value;
+            const payVal = document.getElementById('typePaiement').value;
+            if (!prodVal) return;
+
+            let foundRule = null;
+            if (payVal && globalConfig.rules) {
+                foundRule = globalConfig.rules.find(r => r.product === prodVal && r.payment === payVal);
+            }
+
+            if (foundRule) {
+                document.getElementById('prix').value = foundRule.total;
+                document.getElementById('mensualite').value = foundRule.cash;
+                document.getElementById('nbMens').value = foundRule.nbMens;
+                document.getElementById('jour').value = foundRule.jour || new Date().getDate(); // Default to today
+            } else {
+                const prodSelect = document.getElementById('formation');
+                const opt = prodSelect.options[prodSelect.selectedIndex];
+                if(opt && opt.dataset.price && (!document.getElementById('prix').value || !payVal)) {
+                    document.getElementById('prix').value = opt.dataset.price;
+                }
+            }
+            calcRest();
+        }
         
-        function renderSettingsView() { const prodBody = document.getElementById('settings-products-body'); const payBody = document.getElementById('settings-payments-body'); prodBody.innerHTML = ''; payBody.innerHTML = ''; (globalConfig.products || []).forEach((p, idx) => { prodBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('prod', ${idx}, 'org', this.value)" placeholder="Org..."></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('prod', ${idx}, 'name', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${p.price}" onchange="updateConfigLocal('prod', ${idx}, 'price', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('prod', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); (globalConfig.payments || []).forEach((p, idx) => { payBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('pay', ${idx}, 'org', this.value)" placeholder="Org..."></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('pay', ${idx}, 'name', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('pay', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
+        function renderSettingsView() { 
+            const prodBody = document.getElementById('settings-products-body'); const payBody = document.getElementById('settings-payments-body'); const rulesBody = document.getElementById('settings-rules-body');
+            prodBody.innerHTML = ''; payBody.innerHTML = ''; rulesBody.innerHTML = '';
+            
+            (globalConfig.products || []).forEach((p, idx) => { prodBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('prod', ${idx}, 'org', this.value)"></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('prod', ${idx}, 'name', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${p.price}" onchange="updateConfigLocal('prod', ${idx}, 'price', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('prod', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+            (globalConfig.payments || []).forEach((p, idx) => { payBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('pay', ${idx}, 'org', this.value)"></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('pay', ${idx}, 'name', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('pay', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+            
+            // Render Règles
+            (globalConfig.rules || []).forEach((r, idx) => { 
+                rulesBody.innerHTML += `<tr>
+                    <td class="p-2"><input type="text" class="form-input" value="${r.org}" onchange="updateConfigLocal('rules', ${idx}, 'org', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input font-bold text-emerald-400" value="${r.product}" placeholder="Nom Produit..." onchange="updateConfigLocal('rules', ${idx}, 'product', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input text-indigo-400" value="${r.payment}" placeholder="Nom Paiement..." onchange="updateConfigLocal('rules', ${idx}, 'payment', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input w-24" value="${r.total}" onchange="updateConfigLocal('rules', ${idx}, 'total', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input w-24" value="${r.cash}" onchange="updateConfigLocal('rules', ${idx}, 'cash', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input w-16" value="${r.nbMens}" placeholder="#" onchange="updateConfigLocal('rules', ${idx}, 'nbMens', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input w-16" value="${r.jour}" placeholder="J" onchange="updateConfigLocal('rules', ${idx}, 'jour', this.value)"></td>
+                    <td class="p-2 text-right"><button onclick="removeSettingRow('rules', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>`; 
+            });
+        }
         
         function setupSuperAdminSelector() { const orgContainer = document.getElementById('superadmin-selector-container'); const orgSel = document.getElementById('superadmin-org-selector'); const managerContainer = document.getElementById('manager-selector-container'); orgContainer.classList.remove('hidden'); managerContainer.classList.add('hidden'); orgSel.innerHTML = '<option value="">Choisir Client...</option>'; Object.keys(superAdminData).forEach(orgName => { const opt = document.createElement('option'); opt.value = orgName; opt.textContent = orgName; orgSel.appendChild(opt); }); orgSel.addEventListener('change', (e) => { const selectedOrg = e.target.value; if(selectedOrg && superAdminData[selectedOrg]) { currentUser.org = selectedOrg; document.getElementById('org-display').textContent = selectedOrg; availableSheets = superAdminData[selectedOrg]; setupManagerSelector(availableSheets); currentSheetId = 'ALL'; document.getElementById('manager-view-selector').value = 'ALL'; loadDeals(); } else { managerContainer.classList.add('hidden'); } }); }
         function setupManagerSelector(sheets) { const sel = document.getElementById('manager-view-selector'); document.getElementById('manager-selector-container').classList.remove('hidden'); sel.innerHTML = '<option value="ALL">Vue Globale (Équipe)</option>'; sheets.forEach(s => { const opt = document.createElement('option'); opt.value = s.sheetId; opt.textContent = s.name; sel.appendChild(opt); }); sel.onchange = (e) => { currentSheetId = e.target.value; localStorage.setItem('crm_sheetId', currentSheetId); updateAddButtonVisibility(); loadDeals(); }; }
@@ -478,7 +475,7 @@
             allDealsCache.forEach(d => {
                 if(!d.dateRDV) return; const date = new Date(d.dateRDV); const mName = months[date.getMonth()];
                 const sName = d.source || 'Inconnu';
-                const signed = safeFloat(d.prix); const cash = d.mensualite ? safeFloat(d.mensualite) : signed;
+                const signed = safeFloat(d.prix); const cash = d.mensualite ? safeFloat(d.mensualite) : 0; // Strict cash logic: 0 if empty
                 if(d.close) { totalCASigned += signed; totalCash += cash; totalWins++; }
                 if(!d.ghost && !d.cancelled && !d.rescheduled) totalPres++;
                 if(!dataMonth[mName]) dataMonth[mName] = { ca: 0, cash: 0 };
@@ -516,7 +513,7 @@
 
         function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
         document.getElementById('close').addEventListener('change', toggleClosing);
-        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); }
+        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); document.getElementById('prospect-avatar').textContent = "?"; setDealStatus(null); }
         function formatDateFR(s) { if(!s) return '-'; const d = new Date(s); return d.toLocaleDateString('fr-FR'); }
         document.getElementById('filter-month').addEventListener('change', applyFilters); document.getElementById('filter-status').addEventListener('change', applyFilters); document.getElementById('reset-filters').addEventListener('click', () => { document.getElementById('filter-month').value = 'current'; document.getElementById('filter-status').value = 'all'; applyFilters(); });
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
