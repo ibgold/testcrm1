@@ -129,20 +129,83 @@
                     </div>
                 </div>
 
-                <!-- VIEW: STATS -->
-                <div id="view-stats" class="hidden space-y-8 fade-in">
+                <!-- VIEW: STATS (REFONTE VISUELLE) -->
+                <div id="view-stats" class="hidden space-y-6 fade-in">
+                    <!-- LIGNE 1 : KPIS INTELLIGENTS & LISIBLES -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-amber-500">CA Signé Total</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-ca-sign">0 €</p></div>
-                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-emerald-500">Cash Encaissé</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-ca-cash">0 €</p></div>
-                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-indigo-400">Taux de Closing</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-tx-close">0%</p></div>
-                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-blue-400">Panier Moyen</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-avg-cart">0 €</p></div>
+                        <!-- KPI CA SIGNÉ : Design épuré, fond foncé, bordure colorée -->
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-2xl border dark:border-amber-500/50 border-slate-200 border-l-4 shadow-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-file-contract text-6xl text-amber-500"></i></div>
+                            <p class="text-xs font-bold uppercase text-amber-500 mb-1">CA Signé Total</p>
+                            <p class="text-3xl font-extrabold dark:text-white text-slate-800" id="report-ca-sign">0 €</p>
+                            <p class="text-[10px] text-slate-400 mt-2 font-medium">Montant total des contrats</p>
+                        </div>
+
+                        <!-- KPI CASH IN : Design épuré, fond foncé, bordure colorée -->
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-2xl border dark:border-emerald-500/50 border-slate-200 border-l-4 shadow-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-sack-dollar text-6xl text-emerald-500"></i></div>
+                            <p class="text-xs font-bold uppercase text-emerald-500 mb-1">Cash In (Réel)</p>
+                            <p class="text-3xl font-extrabold dark:text-white text-slate-800" id="report-ca-cash">0 €</p>
+                            <p class="text-[10px] text-slate-400 mt-2 font-medium" id="report-collection-rate">Taux d'encaissement: 0%</p>
+                        </div>
+
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-2xl border dark:border-slate-700 border-slate-200">
+                            <p class="text-xs font-bold uppercase text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-bullseye"></i> Taux de Closing</p>
+                            <div class="flex items-end gap-2 mt-2">
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800" id="report-tx-close">0%</p>
+                                <span class="text-xs text-slate-400 mb-1 font-mono" id="report-wins-total">0/0</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden"><div id="bar-tx-close" class="bg-indigo-500 h-full rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-2xl border dark:border-slate-700 border-slate-200">
+                            <p class="text-xs font-bold uppercase text-blue-400 flex items-center gap-2"><i class="fa-solid fa-basket-shopping"></i> Panier Moyen</p>
+                            <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-2" id="report-avg-cart">0 €</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Par vente clôturée</p>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200"><h3 class="font-bold dark:text-white text-slate-800 mb-4 text-sm uppercase tracking-wide">Evolution Financière (Mois)</h3><div class="h-64"><canvas id="chart-finance"></canvas></div></div>
-                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200"><h3 class="font-bold dark:text-white text-slate-800 mb-4 text-sm uppercase tracking-wide">Entonnoir de Conversion</h3><div class="h-64"><canvas id="chart-funnel"></canvas></div></div>
+
+                    <!-- LIGNE 2 : CHARTS ANALYTIQUES -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Chart Evolution (2/3 largeur) -->
+                        <div class="lg:col-span-2 dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200 flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold dark:text-white text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2"><i class="fa-solid fa-chart-area text-slate-500"></i> Performance Financière</h3>
+                                <div class="flex gap-2 text-[10px] font-bold">
+                                    <span class="flex items-center gap-1 text-amber-500"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Signé</span>
+                                    <span class="flex items-center gap-1 text-emerald-500"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Cash</span>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-h-[250px]"><canvas id="chart-finance"></canvas></div>
+                        </div>
+
+                        <!-- Chart Raisons (1/3 largeur) -->
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200 flex flex-col">
+                            <h3 class="font-bold dark:text-white text-slate-800 text-sm uppercase tracking-wide mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-slate-500"></i> Analyse des Échecs</h3>
+                            <div class="flex-1 min-h-[200px] relative"><canvas id="chart-reasons"></canvas></div>
+                            <div id="reasons-legend" class="mt-4 space-y-2"></div>
+                        </div>
                     </div>
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-indigo-500 rounded-full"></span> Performance Mensuelle</h3></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Mois</th><th class="p-3 text-center">RDV</th><th class="p-3 text-center">Prés.</th><th class="p-3 text-center">%</th><th class="p-3 text-center">Wins</th><th class="p-3 text-center">% Conv.</th><th class="p-3 text-right">CA</th><th class="p-3 text-right text-emerald-400">Cash</th></tr></thead><tbody id="stats-month-body"></tbody></table></div></div>
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50 flex justify-between items-center"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-amber-500 rounded-full"></span> Par Source</h3><select id="stats-source-month-filter" class="form-input !w-auto !py-1 !text-xs"><option value="all">Tout</option></select></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Source</th><th class="p-3 text-center opacity-80">RDV</th><th class="p-3 text-center opacity-80">Prés.</th><th class="p-3 text-center text-blue-400">% Prés.</th><th class="p-3 text-center text-emerald-400">Wins</th><th class="p-3 text-center text-indigo-400">% Conv.</th><th class="p-3 text-right text-amber-400">CA</th><th class="p-3 text-right text-emerald-400">Cash</th></tr></thead><tbody id="stats-source-body"></tbody></table></div></div>
+
+                    <!-- LIGNE 3 : TABLEAUX DETAILS -->
+                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50 flex justify-between items-center">
+                            <h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-indigo-500 rounded-full"></span> Top Sources</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="dark:bg-black/40 bg-slate-100 text-xs uppercase dark:text-slate-400 text-slate-500">
+                                    <tr>
+                                        <th class="p-3 text-left pl-6">Source</th>
+                                        <th class="p-3 text-center">Volume</th>
+                                        <th class="p-3 text-left w-1/3">Conversion</th>
+                                        <th class="p-3 text-right">CA Généré</th>
+                                        <th class="p-3 text-right pr-6">Cash</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stats-source-body" class="divide-y dark:divide-slate-700/50 divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- VIEW: SETTINGS -->
@@ -262,7 +325,7 @@
         window.switchView = function(viewId) { 
             ['dashboard', 'stats', 'settings'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden')); 
             document.getElementById(`view-${viewId}`).classList.remove('hidden'); 
-            const titles = { dashboard: 'Pipeline', stats: 'Rapports & KPIs', settings: 'Paramètres' }; 
+            const titles = { dashboard: 'Pipeline', stats: 'Statistiques', settings: 'Paramètres' }; 
             document.getElementById('page-title').textContent = titles[viewId]; 
             const act = document.getElementById('topbar-actions'); 
             if(viewId === 'dashboard') act.classList.remove('hidden'); else act.classList.add('hidden'); 
@@ -376,8 +439,7 @@
         window.saveSettings = async function() { const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; };
 
         window.logout = function() { localStorage.clear(); location.reload(); };
-        // THEME TOGGLE REMOVED - initTheme function removed
-
+        
         let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let globalConfig = { products: [], payments: [], rules: [] };
         async function fetchConfig() { try { const res = await fetchAppsScript('GET_CONFIG'); if(res.success) globalConfig = res.config; } catch(e) {} }
         
@@ -407,7 +469,7 @@
             // MODIFICATION ICI : Alerte si pas de Sheet ID
             if(!currentSheetId || currentSheetId === 'null') {
                 alert("⚠️ ATTENTION : Aucun ID de fichier n'est associé à votre compte.\n\nVeuillez contacter l'administrateur pour qu'il ajoute votre Sheet ID dans l'onglet 'Utilisateurs' du fichier Master.");
-                document.getElementById('no-data-message').innerHTML = '<div class="text-center p-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i><p class="font-bold text-lg">Erreur de Configuration</p><p class="text-xs opacity-70">Votre compte n\'est lié à aucune Google Sheet.</p></div>';
+                document.getElementById('no-data-message').innerHTML = '<div class="text-center p-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i><p class="font-bold text-lg text-white">Erreur de Configuration</p><p class="text-xs text-slate-400">Votre compte n\'est lié à aucune Google Sheet.</p></div>';
                 document.getElementById('no-data-message').classList.remove('hidden');
                 return;
             }
@@ -539,46 +601,166 @@
         const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button>${roleNettoye !== 'closer' ? `<button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
         function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
         
-        // --- REPORTING ---
+        // --- REPORTING (NOUVELLE VERSION INTELLIGENTE) ---
         function updateReports() {
             const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-            const dataMonth = {}, dataSource = {}; let totalCASigned = 0, totalCash = 0, totalWins = 0, totalPres = 0;
+            const dataMonth = {}, dataSource = {}; 
+            let totalCASigned = 0, totalCash = 0, totalWins = 0, totalPres = 0;
+            const reasons = { ghost: 0, unqualified: 0, nonClose: 0, cancelled: 0 }; // Track failure reasons
+
             allDealsCache.forEach(d => {
                 if(!d.dateRDV) return; const date = new Date(d.dateRDV); const mName = months[date.getMonth()];
                 const sName = d.source || 'Inconnu';
-                const signed = safeFloat(d.prix); const cash = d.mensualite ? safeFloat(d.mensualite) : 0; // Strict cash logic: 0 if empty
+                const signed = safeFloat(d.prix); const cash = d.mensualite ? safeFloat(d.mensualite) : 0; 
+                
+                // Aggregation Logique
                 if(d.close) { totalCASigned += signed; totalCash += cash; totalWins++; }
-                if(!d.ghost && !d.cancelled && !d.rescheduled) totalPres++;
+                if(!d.ghost && !d.cancelled && !d.rescheduled) totalPres++; // Présence = Pas annulé, pas reporté, pas ghost
+
+                // Failure Reasons
+                if(d.ghost) reasons.ghost++;
+                if(d.unqualified) reasons.unqualified++;
+                if(d.nonClose) reasons.nonClose++;
+                if(d.cancelled) reasons.cancelled++;
+
+                // Data per Month
                 if(!dataMonth[mName]) dataMonth[mName] = { ca: 0, cash: 0 };
-                if(!dataSource[sName]) dataSource[sName] = { count: 0, win: 0, ca: 0 };
                 if(d.close) { dataMonth[mName].ca += signed; dataMonth[mName].cash += cash; }
+
+                // Data per Source
+                if(!dataSource[sName]) dataSource[sName] = { count: 0, win: 0, ca: 0, cash: 0 };
                 dataSource[sName].count++;
-                if(d.close) { dataSource[sName].win++; dataSource[sName].ca += signed; }
+                if(d.close) { dataSource[sName].win++; dataSource[sName].ca += signed; dataSource[sName].cash += cash; }
             });
+
+            // UPDATE KPIS DOM
             document.getElementById('report-ca-sign').textContent = totalCASigned.toLocaleString('fr-FR') + ' €';
             document.getElementById('report-ca-cash').textContent = totalCash.toLocaleString('fr-FR') + ' €';
-            document.getElementById('report-tx-close').textContent = totalPres ? Math.round((totalWins/totalPres)*100) + '%' : '0%';
+            
+            const closingRate = totalPres ? Math.round((totalWins/totalPres)*100) : 0;
+            document.getElementById('report-tx-close').textContent = closingRate + '%';
+            document.getElementById('report-wins-total').textContent = `${totalWins}/${totalPres}`;
+            document.getElementById('bar-tx-close').style.width = `${closingRate}%`;
+
+            const collectionRate = totalCASigned ? Math.round((totalCash/totalCASigned)*100) : 0;
+            document.getElementById('report-collection-rate').textContent = `Taux d'encaissement: ${collectionRate}%`;
+
             document.getElementById('report-avg-cart').textContent = totalWins ? Math.round(totalCASigned/totalWins).toLocaleString('fr-FR') + ' €' : '0 €';
-            renderFinanceChart(months, dataMonth); renderFunnelChart(allDealsCache.length, totalPres, totalWins); renderSourceTable(dataSource);
+
+            // RENDER CHARTS
+            renderFinanceChart(months, dataMonth);
+            renderReasonsChart(reasons);
+            renderSourceTable(dataSource);
         }
-        let financeChart, funnelChart;
+
+        let financeChart, reasonsChart;
+
         function renderFinanceChart(labels, dataObj) {
             const ctx = document.getElementById('chart-finance').getContext('2d');
             const caData = labels.map(m => dataObj[m] ? dataObj[m].ca : 0);
             const cashData = labels.map(m => dataObj[m] ? dataObj[m].cash : 0);
+            
             if(financeChart) financeChart.destroy();
-            financeChart = new Chart(ctx, { type: 'bar', data: { labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1,3)), datasets: [ { label: 'CA Signé', data: caData, backgroundColor: '#f59e0b', borderRadius: 4 }, { label: 'Cash In', data: cashData, backgroundColor: '#10b981', borderRadius: 4 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } } });
+            
+            financeChart = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1,3)), 
+                    datasets: [ 
+                        { 
+                            label: 'CA Signé', 
+                            data: caData, 
+                            backgroundColor: '#f59e0b', // Amber
+                            borderRadius: 4,
+                            order: 2
+                        }, 
+                        { 
+                            type: 'line',
+                            label: 'Cash Encaissé', 
+                            data: cashData, 
+                            borderColor: '#10b981', // Emerald
+                            borderWidth: 3,
+                            pointBackgroundColor: '#10b981',
+                            tension: 0.4,
+                            order: 1
+                        } 
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, 
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
+                    } 
+                } 
+            });
         }
-        function renderFunnelChart(total, pres, wins) {
-            const ctx = document.getElementById('chart-funnel').getContext('2d');
-            if(funnelChart) funnelChart.destroy();
-            funnelChart = new Chart(ctx, { type: 'bar', indexAxis: 'y', data: { labels: ['Total RDV', 'Présence', 'Ventes'], datasets: [{ label: 'Volume', data: [total, pres, wins], backgroundColor: ['#6366f1', '#3b82f6', '#10b981'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#cbd5e1', font: { weight: 'bold' } }, grid: { display: false } } } } });
+
+        function renderReasonsChart(reasons) {
+            const ctx = document.getElementById('chart-reasons').getContext('2d');
+            const dataValues = [reasons.nonClose, reasons.unqualified, reasons.ghost, reasons.cancelled];
+            const total = dataValues.reduce((a,b)=>a+b,0);
+
+            if(reasonsChart) reasonsChart.destroy();
+
+            // Custom Legend
+            const legendDiv = document.getElementById('reasons-legend');
+            legendDiv.innerHTML = '';
+            const labels = ['Perdu', 'Non Qualif', 'Ghost', 'Annulé'];
+            const colors = ['#ef4444', '#f97316', '#f59e0b', '#64748b'];
+            
+            labels.forEach((l, i) => {
+                const pct = total ? Math.round((dataValues[i]/total)*100) : 0;
+                legendDiv.innerHTML += `<div class="flex justify-between items-center text-xs text-slate-300">
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:${colors[i]}"></span> ${l}</span>
+                    <span class="font-bold">${dataValues[i]} <span class="opacity-50 text-[10px] ml-1">(${pct}%)</span></span>
+                </div>`;
+            });
+
+            reasonsChart = new Chart(ctx, { 
+                type: 'doughnut', 
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: dataValues, 
+                        backgroundColor: colors, 
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '75%',
+                    plugins: { legend: { display: false } } 
+                } 
+            });
         }
+
         function renderSourceTable(data) {
             const tbody = document.getElementById('stats-source-body'); tbody.innerHTML = '';
             Object.keys(data).sort((a,b) => data[b].ca - data[a].ca).forEach(k => {
-                const s = data[k]; const tx = s.count ? Math.round((s.win/s.count)*100) : 0;
-                tbody.innerHTML += `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3 text-slate-300 font-medium">${k}</td><td class="p-3 text-center text-slate-500">${s.count}</td><td class="p-3 text-center text-emerald-400 font-bold">${s.win}</td><td class="p-3 text-center text-indigo-400">${tx}%</td><td class="p-3 text-right text-amber-500 font-mono">${s.ca.toLocaleString()} €</td><td class="p-3 text-right text-emerald-400 font-mono">${(s.ca).toLocaleString()} €</td></tr>`;
+                const s = data[k]; 
+                const tx = s.count ? Math.round((s.win/s.count)*100) : 0;
+                
+                // Progress Bar logic for conversion
+                const barColor = tx > 30 ? 'bg-emerald-500' : (tx > 15 ? 'bg-amber-500' : 'bg-red-500');
+                
+                tbody.innerHTML += `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-3 pl-6 text-slate-300 font-bold">${k}</td>
+                    <td class="p-3 text-center text-slate-500 text-xs">${s.count} Leads</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold w-8 text-right">${tx}%</span>
+                            <div class="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="${barColor} h-full rounded-full" style="width:${tx}%"></div></div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-right text-white font-bold font-mono">${s.ca.toLocaleString()} €</td>
+                    <td class="p-3 text-right pr-6 text-emerald-400 font-mono text-xs">${s.cash.toLocaleString()} €</td>
+                </tr>`;
             });
         }
 
