@@ -9,14 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { color-scheme: dark; } .light { color-scheme: light; }
-        body { font-family: 'Outfit', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body.dark { background: #0f172a; color: #cbd5e1; } body.light { background: #f8fafc; color: #334155; }
+        :root { color-scheme: dark; }
+        /* Suppression des styles .light spécifiques car le mode est forcé en dark */
+        body { font-family: 'Outfit', sans-serif; background: #0f172a; color: #cbd5e1; }
         .custom-scroll::-webkit-scrollbar { width: 6px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .glass-header { border-bottom: 1px solid; transition: all 0.3s; } .dark .glass-header { background: #1e293b; border-color: #334155; } .light .glass-header { background: #ffffff; border-color: #e2e8f0; }
+        .glass-header { border-bottom: 1px solid; transition: all 0.3s; background: #1e293b; border-color: #334155; }
         .form-input { @apply block w-full rounded-lg border-0 ring-1 ring-inset py-2.5 px-3 text-sm shadow-sm transition-all outline-none bg-transparent; }
-        .dark .form-input { @apply ring-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-amber-500 focus:bg-slate-800; }
-        .light .form-input { @apply ring-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-600 focus:bg-white; }
+        .form-input { @apply ring-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-amber-500 focus:bg-slate-800; }
         .form-group label { @apply block text-[10px] font-bold uppercase tracking-wider mb-1.5 ml-1 transition-colors opacity-70; }
         .status-pill { @apply px-3 py-2 rounded-lg text-xs font-bold border border-transparent transition-all cursor-pointer flex items-center justify-center gap-2 select-none opacity-60 hover:opacity-100 bg-slate-800 text-slate-400; }
         .status-pill.active { @apply opacity-100 ring-2 ring-offset-2 ring-offset-slate-900; }
@@ -66,7 +65,7 @@
                         <span class="text-[10px] dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded border dark:border-amber-500/30 bg-indigo-100 text-indigo-700 border-indigo-200" id="role-display">Role</span>
                     </div>
                     <div class="flex gap-2">
-                        <button id="theme-toggle" class="flex-1 py-2 text-xs rounded-lg border transition-colors dark:text-slate-400 dark:hover:text-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700 bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm"><i class="fa-solid fa-sun dark:hidden"></i><i class="fa-solid fa-moon hidden dark:inline"></i></button>
+                        <!-- THEME TOGGLE SUPPRIMÉ -->
                         <button onclick="logout()" class="flex-1 py-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-white dark:hover:bg-red-500/20 rounded-lg border dark:border-red-500/10 border-red-100 transition-colors">Déconnexion</button>
                     </div>
                     <p class="text-[10px] text-slate-600 mt-2 text-center truncate font-mono" id="org-display">Org</p>
@@ -107,8 +106,12 @@
                     <!-- TABLE -->
                     <div class="dark:bg-slate-800 bg-white shadow-sm rounded-2xl border dark:border-slate-700 border-slate-200 overflow-hidden">
                         <div class="p-4 border-b dark:border-slate-700 border-slate-200 flex gap-3 overflow-x-auto items-center">
-                            <!-- FILTRE MOIS CORRIGÉ -->
-                            <select id="filter-month" class="form-input !w-auto !py-2 !pl-3 !pr-8"><option value="all" selected>Tout l'historique</option><option value="current">Ce mois</option></select>
+                            <!-- FILTRE MOIS MODIFIÉ -->
+                            <select id="filter-month" class="form-input !w-auto !py-2 !pl-3 !pr-8">
+                                <option value="all" selected>Tout l'historique</option>
+                                <option value="current">Ce mois</option>
+                                <option value="week">Cette semaine</option> <!-- AJOUTÉ -->
+                            </select>
                             <select id="filter-status" class="form-input !w-auto !py-2 !pl-3 !pr-8">
                                 <option value="all">Tous statuts</option><option value="followup">⚡ Relance</option><option value="closed">💰 Closé</option><option value="cancelled">🚫 Annulé</option><option value="unqualified">💩 Non Qualif</option><option value="rescheduled">📅 Reporté</option>
                             </select>
@@ -338,7 +341,27 @@
             document.getElementById('newComment').value = ''; document.getElementById('slide-over-title').textContent = "Modifier le Deal"; document.getElementById('submit-text').innerHTML = "<span>Mettre à jour</span> <i class='fa-solid fa-rotate'></i>"; window.openSlideOver(true); 
         };
 
-        window.deleteDeal = async function(id) { if(!confirm("Supprimer ce deal définitivement ?")) return; const res = await fetchAppsScript('DELETE', { data: { id: id } }); if(res.success) loadDeals(); else alert("Erreur suppression: " + res.message); };
+        // --- CORRECTION DE LA FONCTION DELETE AVEC LOGS ---
+        window.deleteDeal = async function(id) { 
+            if(!confirm("Supprimer ce deal définitivement ?")) return; 
+            
+            // On logue l'action pour le débogage
+            console.log("Tentative de suppression pour ID:", id);
+            
+            const res = await fetchAppsScript('DELETE', { data: { id: id } }); 
+            
+            console.log("Résultat suppression:", res);
+
+            // Correction: On vérifie res.success et on affiche une erreur explicite sinon
+            if(res.success) {
+                loadDeals(); 
+            } else { 
+                // On affiche res.message OU res.error pour éviter les "undefined"
+                alert("Erreur suppression: " + (res.message || res.error || "Erreur inconnue")); 
+            } 
+        };
+        // ----------------------------------------------------
+
         window.viewHistory = function(id) { const d = allDealsCache.find(x => x.id === id); document.getElementById('modal-history-content').innerHTML = (d.commentaireHistory || 'Aucune note').replace(/\n/g, '<br>'); document.getElementById('history-modal').classList.remove('hidden'); };
 
         window.addSettingRow = function(type) { 
@@ -353,7 +376,7 @@
         window.saveSettings = async function() { const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; };
 
         window.logout = function() { localStorage.clear(); location.reload(); };
-        const themeToggleBtn = document.getElementById('theme-toggle'); function initTheme() { if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage))) { document.body.classList.add('dark'); } else { document.body.classList.add('light'); } } themeToggleBtn.addEventListener('click', function() { if (document.body.classList.contains('dark')) { document.body.classList.remove('dark'); document.body.classList.add('light'); localStorage.setItem('color-theme', 'light'); } else { document.body.classList.add('dark'); localStorage.setItem('color-theme', 'dark'); } }); initTheme();
+        // THEME TOGGLE REMOVED - initTheme function removed
 
         let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let globalConfig = { products: [], payments: [], rules: [] };
         async function fetchConfig() { try { const res = await fetchAppsScript('GET_CONFIG'); if(res.success) globalConfig = res.config; } catch(e) {} }
@@ -494,6 +517,10 @@
             if (filterValue === 'current') {
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
             }
+            // ADDED: Logic for 'week' filter
+            if (filterValue === 'week') {
+                return getWeekNumber(d) === getWeekNumber(now) && d.getFullYear() === now.getFullYear();
+            }
             return true;
         }
 
@@ -506,7 +533,10 @@
             return true;
         }
 
-        function renderTable(list) { const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); list.forEach(d => { const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button><button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
+        function renderTable(list) { const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); list.forEach(d => { const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; 
+        // ROLE CHECK NORMALIZED
+        const roleNettoye = (currentUser.role || "").trim().toLowerCase();
+        const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button>${roleNettoye !== 'closer' ? `<button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
         function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
         
         // --- REPORTING ---
