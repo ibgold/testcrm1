@@ -5,40 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thoth CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* BASE & THEMES */
-        :root { color-scheme: dark; }
-        .light { color-scheme: light; }
+        :root { color-scheme: dark; } .light { color-scheme: light; }
         body { font-family: 'Outfit', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body.dark { background: #0f172a; color: #cbd5e1; }
-        body.light { background: #f8fafc; color: #334155; }
-        .custom-scroll::-webkit-scrollbar { width: 8px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        .light .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; }
-        .glass-header { border-bottom: 1px solid; transition: all 0.3s; }
-        .dark .glass-header { background: #1e293b; border-color: #334155; }
-        .light .glass-header { background: #ffffff; border-color: #e2e8f0; }
+        body.dark { background: #0f172a; color: #cbd5e1; } body.light { background: #f8fafc; color: #334155; }
+        .custom-scroll::-webkit-scrollbar { width: 8px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } .light .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        .glass-header { border-bottom: 1px solid; transition: all 0.3s; } .dark .glass-header { background: #1e293b; border-color: #334155; } .light .glass-header { background: #ffffff; border-color: #e2e8f0; }
         .form-input { @apply block w-full rounded-md border-2 py-2.5 px-3 text-sm shadow-sm transition-all outline-none; }
         .dark .form-input { @apply bg-slate-800 border-slate-600 text-white placeholder-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 hover:border-slate-500; }
         .light .form-input { @apply bg-white border-slate-300 text-slate-800 placeholder-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 hover:border-slate-400; }
-        .form-group label { @apply block text-xs font-bold uppercase tracking-wide mb-1.5 ml-1 transition-colors; }
-        .dark .form-group label { @apply text-slate-400; }
-        .light .form-group label { @apply text-slate-500; }
+        .form-group label { @apply block text-xs font-bold uppercase tracking-wide mb-1.5 ml-1 transition-colors; } .dark .form-group label { @apply text-slate-400; } .light .form-group label { @apply text-slate-500; }
         .custom-checkbox-input { @apply sr-only; }
         .custom-checkbox-box { @apply h-5 w-5 rounded border-2 flex items-center justify-center transition-all duration-200; }
-        .dark .custom-checkbox-box { @apply bg-slate-800 border-slate-500; }
-        .light .custom-checkbox-box { @apply bg-white border-slate-400; }
-        .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-amber-500 border-amber-500 text-white; }
-        .light .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-indigo-600 border-indigo-600 text-white; }
+        .dark .custom-checkbox-box { @apply bg-slate-800 border-slate-500; } .light .custom-checkbox-box { @apply bg-white border-slate-400; }
+        .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-amber-500 border-amber-500 text-white; } .light .custom-checkbox-input:checked + .custom-checkbox-box { @apply bg-indigo-600 border-indigo-600 text-white; }
         .status-card { @apply flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer shadow-sm select-none; }
-        .dark .status-card { @apply border-slate-700 bg-slate-800/40 hover:bg-slate-700 hover:border-slate-500; }
-        .light .status-card { @apply border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200; }
+        .dark .status-card { @apply border-slate-700 bg-slate-800/40 hover:bg-slate-700 hover:border-slate-500; } .light .status-card { @apply border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200; }
         .slide-over { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #slide-over-panel { transition: width 0.3s ease, max-width 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
     <script>
@@ -98,7 +85,6 @@
                     <h2 class="text-lg font-bold dark:text-white text-slate-800" id="page-title">Pipeline</h2>
                     <div id="loading-indicator" class="hidden px-2.5 py-0.5 rounded-full dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30 bg-indigo-50 text-indigo-700 border-indigo-100 text-xs font-medium flex items-center"><svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 dark:text-indigo-400 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Sync...</div>
                 </div>
-                <!-- ID AJOUTÉ ICI POUR CORRIGER L'ERREUR switchView -->
                 <div class="flex items-center gap-4" id="topbar-actions">
                     <div id="superadmin-selector-container" class="hidden"><select id="superadmin-org-selector" class="form-input !py-1.5 !text-xs font-bold cursor-pointer !w-40"><option value="">Choisir Client...</option></select></div>
                     <div id="manager-selector-container" class="hidden"><select id="manager-view-selector" class="form-input !py-1.5 !text-xs font-bold cursor-pointer !w-40"><option value="ALL">Vue Globale</option></select></div>
@@ -109,6 +95,7 @@
             <main class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scroll">
                 <!-- VIEW: DASHBOARD -->
                 <div id="view-dashboard" class="space-y-8 fade-in">
+                    <!-- KPIs -->
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
                         <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200">
                             <p class="text-sm font-medium dark:text-slate-400 text-slate-500 mb-1">Total Deals (Vue)</p><p class="text-3xl font-bold dark:text-white text-slate-800" id="metric-total">0</p>
@@ -120,9 +107,12 @@
                             <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1 font-bold">Closés</p><p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400" id="metric-closed">0</p>
                         </div>
                     </div>
+
+                    <!-- TABLE -->
                     <div class="dark:bg-slate-800 bg-white shadow-sm rounded-2xl border dark:border-slate-700 border-slate-200 overflow-hidden">
                         <div class="p-4 border-b dark:border-slate-700 border-slate-200 flex gap-3 overflow-x-auto items-center">
-                            <select id="filter-month" class="form-input !w-auto !py-2 !pl-3 !pr-8"><option value="current">Ce mois</option><option value="all">Tout</option></select>
+                            <!-- FILTRE MOIS CORRIGÉ -->
+                            <select id="filter-month" class="form-input !w-auto !py-2 !pl-3 !pr-8"><option value="all" selected>Tout l'historique</option><option value="current">Ce mois</option></select>
                             <select id="filter-status" class="form-input !w-auto !py-2 !pl-3 !pr-8">
                                 <option value="all">Tous statuts</option><option value="followup">⚡ Relance</option><option value="closed">💰 Closé</option><option value="cancelled">🚫 Annulé</option><option value="unqualified">💩 Non Qualif</option><option value="rescheduled">📅 Reporté</option>
                             </select>
@@ -142,9 +132,18 @@
 
                 <!-- VIEW: STATS -->
                 <div id="view-stats" class="hidden space-y-8 fade-in">
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-indigo-500 rounded-full"></span> Performance Mensuelle</h3></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Mois</th><th class="p-3 text-center">RDV</th><th class="p-3 text-center">Prés.</th><th class="p-3 text-center">%</th><th class="p-3 text-center">Wins</th><th class="p-3 text-center">% Conv.</th><th class="p-3 text-right">CA</th></tr></thead><tbody id="stats-month-body"></tbody></table></div></div>
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50 flex justify-between items-center"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-amber-500 rounded-full"></span> Hebdomadaire</h3><select id="stats-weekly-month-filter" class="form-input !w-auto !py-1 !text-xs"><option value="all">Tout</option></select></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Semaine</th><th class="p-3 text-center opacity-80">RDV</th><th class="p-3 text-center opacity-80">Prés.</th><th class="p-3 text-center text-blue-400">% Prés.</th><th class="p-3 text-center text-emerald-400">Wins</th><th class="p-3 text-center text-indigo-400">% Conv.</th><th class="p-3 text-right text-amber-400">CA</th></tr></thead><tbody id="stats-weekly-body"></tbody></table></div></div>
-                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50 flex justify-between items-center"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-purple-500 rounded-full"></span> Par Source</h3><select id="stats-source-month-filter" class="form-input !w-auto !py-1 !text-xs"><option value="all">Tout</option></select></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Source</th><th class="p-3 text-center opacity-80">RDV</th><th class="p-3 text-center opacity-80">Prés.</th><th class="p-3 text-center text-blue-400">% Prés.</th><th class="p-3 text-center text-emerald-400">Wins</th><th class="p-3 text-center text-indigo-400">% Conv.</th><th class="p-3 text-right text-amber-400">CA</th></tr></thead><tbody id="stats-source-body"></tbody></table></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-amber-500">CA Signé Total</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-ca-sign">0 €</p></div>
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-emerald-500">Cash Encaissé</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-ca-cash">0 €</p></div>
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-indigo-400">Taux de Closing</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-tx-close">0%</p></div>
+                        <div class="dark:bg-slate-800 bg-white p-5 rounded-xl border dark:border-slate-700 border-slate-200"><p class="text-xs font-bold uppercase text-blue-400">Panier Moyen</p><p class="text-2xl font-bold dark:text-white text-slate-800 mt-1" id="report-avg-cart">0 €</p></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200"><h3 class="font-bold dark:text-white text-slate-800 mb-4 text-sm uppercase tracking-wide">Evolution Financière (Mois)</h3><div class="h-64"><canvas id="chart-finance"></canvas></div></div>
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl border dark:border-slate-700 border-slate-200"><h3 class="font-bold dark:text-white text-slate-800 mb-4 text-sm uppercase tracking-wide">Entonnoir de Conversion</h3><div class="h-64"><canvas id="chart-funnel"></canvas></div></div>
+                    </div>
+                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-indigo-500 rounded-full"></span> Performance Mensuelle</h3></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Mois</th><th class="p-3 text-center">RDV</th><th class="p-3 text-center">Prés.</th><th class="p-3 text-center">%</th><th class="p-3 text-center">Wins</th><th class="p-3 text-center">% Conv.</th><th class="p-3 text-right">CA</th><th class="p-3 text-right text-emerald-400">Cash</th></tr></thead><tbody id="stats-month-body"></tbody></table></div></div>
+                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 overflow-hidden"><div class="px-6 py-4 border-b dark:border-slate-700 border-slate-100 dark:bg-slate-900/50 bg-slate-50 flex justify-between items-center"><h3 class="font-bold dark:text-white text-slate-800 flex items-center gap-2"><span class="w-1 h-4 bg-amber-500 rounded-full"></span> Par Source</h3><select id="stats-source-month-filter" class="form-input !w-auto !py-1 !text-xs"><option value="all">Tout</option></select></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-black bg-slate-800 text-white"><tr><th class="p-3 text-left">Source</th><th class="p-3 text-center opacity-80">RDV</th><th class="p-3 text-center opacity-80">Prés.</th><th class="p-3 text-center text-blue-400">% Prés.</th><th class="p-3 text-center text-emerald-400">Wins</th><th class="p-3 text-center text-indigo-400">% Conv.</th><th class="p-3 text-right text-amber-400">CA</th><th class="p-3 text-right text-emerald-400">Cash</th></tr></thead><tbody id="stats-source-body"></tbody></table></div></div>
                 </div>
 
                 <!-- VIEW: SETTINGS -->
@@ -177,6 +176,7 @@
                         <div class="grid grid-cols-2 gap-4"><div class="form-group"><label>Email</label><input type="email" id="email" class="form-input" placeholder="Email"></div><div class="form-group"><label>Téléphone</label><input type="text" id="numero" class="form-input" placeholder="Tel"></div></div>
                         <div class="form-group"><label>Lien Call (URL)</label><input type="url" id="enregistrementCall" class="form-input" placeholder="https://..."></div>
                     </div>
+
                     <div class="dark:bg-slate-800/50 bg-slate-50 rounded-xl p-5 border-2 dark:border-slate-700 border-slate-200">
                         <label class="flex items-center cursor-pointer w-full p-3 dark:bg-emerald-500/10 bg-emerald-50 border-2 dark:border-emerald-500/30 border-emerald-200 rounded-lg hover:shadow-md transition-all mb-4 group"><input id="close" type="checkbox" class="custom-checkbox-input peer"><div class="custom-checkbox-box peer-checked:bg-emerald-500 peer-checked:border-emerald-500"><i class="fa-solid fa-check text-xs text-white opacity-0 peer-checked:opacity-100"></i></div><span class="ml-3 font-bold dark:text-emerald-400 text-emerald-800">✅ Deal Closé</span></label>
                         <div class="grid grid-cols-2 gap-3">
@@ -207,63 +207,320 @@
     <!-- History Modal -->
     <div id="history-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"><div class="absolute inset-0 dark:bg-black/80 bg-slate-900/40 backdrop-blur-sm" onclick="document.getElementById('history-modal').classList.add('hidden')"></div><div class="relative dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"><div class="p-4 border-b dark:border-white/10 border-slate-100 font-bold dark:text-white text-slate-800">Historique Complet</div><div id="modal-history-content" class="p-6 text-sm dark:text-slate-300 text-slate-600 max-h-96 overflow-y-auto dark:bg-slate-800/50 bg-slate-50"></div><div class="p-4 border-t dark:border-white/10 border-slate-100 flex justify-end"><button onclick="document.getElementById('history-modal').classList.add('hidden')" class="text-sm font-bold dark:text-slate-400 text-slate-500 hover:text-slate-800 dark:hover:text-white">Fermer</button></div></div></div>
     
-    <pre id="debug-console" class="hidden"></pre>
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzTCbYR2H4jsGfrZt60oxhmwgf8D_wS8QSgO4GggLoECqsPP9LctDITbWgb6oBZQh/exec'; 
+        
+        // GLOBAL SCOPE
+        window.switchView = function(viewId) { 
+            ['dashboard', 'stats', 'settings'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden')); 
+            document.getElementById(`view-${viewId}`).classList.remove('hidden'); 
+            const titles = { dashboard: 'Pipeline', stats: 'Rapports & KPIs', settings: 'Paramètres' }; 
+            document.getElementById('page-title').textContent = titles[viewId]; 
+            const act = document.getElementById('topbar-actions'); 
+            if(viewId === 'dashboard') act.classList.remove('hidden'); else act.classList.add('hidden'); 
+            if(viewId === 'stats') updateReports(); 
+            if(viewId === 'settings') renderSettingsView(); 
+        };
+        
+        window.openSlideOver = function(isEdit = false) { 
+            if(!isEdit) resetForm(); 
+            document.getElementById('slide-over-container').classList.remove('hidden'); 
+            setTimeout(() => { document.getElementById('slide-over-panel').classList.remove('translate-x-full'); }, 10); 
+            if (!isEdit) { 
+                document.getElementById('slide-over-title').textContent = "Nouveau Deal"; 
+                document.getElementById('submit-text').textContent = "Enregistrer"; 
+            } 
+        };
+
+        window.closeSlideOver = function() { 
+            document.getElementById('slide-over-panel').classList.add('translate-x-full'); 
+            setTimeout(() => { document.getElementById('slide-over-container').classList.add('hidden'); }, 300); 
+        };
+
+        window.toggleExpand = function() { 
+            const panel = document.getElementById('slide-over-panel'); const icon = document.getElementById('expand-icon'); 
+            if (panel.classList.contains('max-w-md')) { panel.classList.remove('max-w-md'); panel.classList.add('max-w-4xl'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
+            else { panel.classList.add('max-w-md'); panel.classList.remove('max-w-4xl'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); } 
+        };
+
+        // --- CORE FORM LOGIC ---
+        document.getElementById('deal-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-text');
+            const originalText = btn.textContent;
+            btn.disabled = true; 
+            btn.textContent = "Traitement...";
+
+            const dealData = {
+                id: editingId, // if null -> CREATE
+                source: document.getElementById('source').value,
+                nomPrenom: document.getElementById('nomPrenom').value,
+                email: document.getElementById('email').value,
+                numero: document.getElementById('numero').value,
+                dateRDV: document.getElementById('dateRDV').value,
+                entrepreneur: document.getElementById('entrepreneur').value,
+                
+                // Statuts
+                close: document.getElementById('close').checked,
+                aFollowUp: document.getElementById('aFollowUp').checked,
+                ghost: document.getElementById('ghost').checked,
+                nonClose: document.getElementById('nonClose').checked,
+                cancelled: document.getElementById('cancelled').checked,
+                unqualified: document.getElementById('unqualified').checked,
+                rescheduled: document.getElementById('rescheduled').checked,
+                
+                // Finances
+                formation: document.getElementById('formation').value,
+                prix: document.getElementById('prix').value,
+                typePaiement: document.getElementById('typePaiement').value,
+                mensualite: document.getElementById('mensualite').value,
+                
+                // Extra
+                enregistrementCall: document.getElementById('enregistrementCall').value,
+                newCommentText: document.getElementById('newComment').value
+            };
+            
+            // Backend Action Logic (Aligned with your existing script)
+            const action = editingId ? 'UPDATE' : 'CREATE';
+            
+            try {
+                // IMPORTANT: Your backend expects 'data' object nested
+                const res = await fetchAppsScript(action, { data: dealData });
+                
+                if(res.success) {
+                    closeSlideOver();
+                    loadDeals(); // Refresh
+                } else {
+                    alert("Erreur: " + res.message);
+                }
+            } catch(err) {
+                alert("Erreur réseau ou script: " + err.message);
+            } finally {
+                btn.disabled = false; 
+                btn.textContent = originalText;
+            }
+        });
+
+        window.editDeal = function(id) { 
+            const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id; 
+            document.getElementById('nomPrenom').value = d.nomPrenom || ''; 
+            document.getElementById('source').value = d.source || ''; 
+            document.getElementById('entrepreneur').value = d.entrepreneur || ''; 
+            document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : ''; 
+            document.getElementById('email').value = d.email || ''; 
+            document.getElementById('numero').value = d.numero || ''; 
+            document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
+            document.getElementById('close').checked = d.close; 
+            document.getElementById('aFollowUp').checked = d.aFollowUp; 
+            document.getElementById('ghost').checked = d.ghost; 
+            document.getElementById('nonClose').checked = d.nonClose; 
+            document.getElementById('cancelled').checked = d.cancelled||false; 
+            document.getElementById('unqualified').checked = d.unqualified||false; 
+            document.getElementById('rescheduled').checked = d.rescheduled||false; 
+            toggleClosing(); 
+            document.getElementById('formation').value = d.formation || ''; 
+            document.getElementById('prix').value = d.prix || ''; 
+            document.getElementById('typePaiement').value = d.typePaiement || ''; 
+            document.getElementById('mensualite').value = d.mensualite || ''; 
+            const hist = document.getElementById('comment-history'); 
+            if(d.commentaireHistory) { 
+                hist.innerHTML = d.commentaireHistory.replace(/\n/g, '<br>'); 
+                hist.classList.remove('hidden'); 
+            } else { hist.classList.add('hidden'); }
+            document.getElementById('newComment').value = ''; 
+            document.getElementById('slide-over-title').textContent = `Modifier : ${d.nomPrenom}`; 
+            document.getElementById('submit-text').textContent = "Mettre à jour"; 
+            window.openSlideOver(true); 
+        };
+
+        window.deleteDeal = async function(id) { 
+            if(!confirm("Supprimer ce deal définitivement ?")) return; 
+            // Corrected to match your backend DELETE signature
+            const res = await fetchAppsScript('DELETE', { data: { id: id } });
+            if(res.success) loadDeals();
+            else alert("Erreur suppression: " + res.message);
+        };
+        
+        window.viewHistory = function(id) { const d = allDealsCache.find(x => x.id === id); document.getElementById('modal-history-content').innerHTML = (d.commentaireHistory || 'Aucune note').replace(/\n/g, '<br>'); document.getElementById('history-modal').classList.remove('hidden'); };
+
+        window.addSettingRow = function(type) { 
+            const defaultOrg = currentUser.org || ""; 
+            if(type === 'products') { if(!globalConfig.products) globalConfig.products=[]; globalConfig.products.push({org: defaultOrg, name: 'Nouveau Produit', price: 0}); } 
+            if(type === 'payments') { if(!globalConfig.payments) globalConfig.payments=[]; globalConfig.payments.push({org: defaultOrg, name: 'Nouveau Paiement'}); } 
+            renderSettingsView(); 
+        };
+
+        window.removeSettingRow = function(type, idx) { 
+            if(type === 'prod') globalConfig.products.splice(idx, 1); 
+            if(type === 'pay') globalConfig.payments.splice(idx, 1); 
+            renderSettingsView(); 
+        };
+
+        window.updateConfigLocal = function(type, idx, field, val) { 
+            if(type === 'prod') globalConfig.products[idx][field] = val; 
+            if(type === 'pay') globalConfig.payments[idx][field] = val; 
+        };
+
+        window.saveSettings = async function() { 
+            const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; 
+            try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } 
+            btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; 
+        };
+
+        window.logout = function() { localStorage.clear(); location.reload(); };
+
+        // THEME TOGGLE
         const themeToggleBtn = document.getElementById('theme-toggle');
-        function initTheme() { if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage))) { document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark'); } else { document.body.classList.add('light'); document.body.classList.remove('dark'); document.documentElement.classList.remove('dark'); } }
-        themeToggleBtn.addEventListener('click', function() { if (document.body.classList.contains('dark')) { document.body.classList.remove('dark'); document.body.classList.add('light'); document.documentElement.classList.remove('dark'); localStorage.setItem('color-theme', 'light'); } else { document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark'); localStorage.setItem('color-theme', 'dark'); } });
+        function initTheme() {
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage))) {
+                document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark');
+            } else {
+                document.body.classList.add('light'); document.body.classList.remove('dark'); document.documentElement.classList.remove('dark');
+            }
+        }
+        themeToggleBtn.addEventListener('click', function() {
+            if (document.body.classList.contains('dark')) {
+                document.body.classList.remove('dark'); document.body.classList.add('light'); document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.body.classList.add('dark'); document.body.classList.remove('light'); document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
         initTheme();
 
         let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let currentUserName = localStorage.getItem('crm_user'); let superAdminData = null; let availableSheets = []; let editingId = null; let globalConfig = { products: [], payments: [] };
-        const debugConsole = document.getElementById('debug-console'); function logDebug(msg) { console.log(msg); }
         async function fetchConfig() { try { const res = await fetchAppsScript('GET_CONFIG'); if(res.success) globalConfig = res.config; } catch(e) {} }
-        function initAuth() { const stored = localStorage.getItem('sellit_auth'); if (stored) { const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; fetchConfig().then(() => populateFormDropdowns()); if(currentUser.role === 'super_admin') { superAdminData = data.superAdminData || {}; setupSuperAdminSelector(); document.getElementById('nav-settings').classList.remove('hidden'); } else if(currentUser.role === 'manager' || currentUser.role === 'admin') { availableSheets = data.teamSheets || []; setupManagerSelector(availableSheets); document.getElementById('nav-settings').classList.remove('hidden'); } else { if (!currentSheetId || currentSheetId === 'null') { currentSheetId = currentUser.personalSheetId; localStorage.setItem('crm_sheetId', currentSheetId); } } showApp(); loadDeals(); } else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); } }
+        
+        function initAuth() { 
+            const stored = localStorage.getItem('sellit_auth'); 
+            if (stored) { 
+                const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; 
+                fetchConfig().then(() => populateFormDropdowns()); 
+                if(currentUser.role === 'super_admin') { superAdminData = data.superAdminData || {}; setupSuperAdminSelector(); document.getElementById('nav-settings').classList.remove('hidden'); } 
+                else if(currentUser.role === 'manager' || currentUser.role === 'admin') { availableSheets = data.teamSheets || []; setupManagerSelector(availableSheets); document.getElementById('nav-settings').classList.remove('hidden'); } 
+                else { if (!currentSheetId || currentSheetId === 'null') { currentSheetId = currentUser.personalSheetId; localStorage.setItem('crm_sheetId', currentSheetId); } } 
+                showApp(); loadDeals(); 
+            } else { 
+                document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); 
+            } 
+        }
+        
         function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
+        
         document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const text = await response.text(); let result; try { result = JSON.parse(text); } catch(parseError) { throw new Error("Erreur serveur (HTML)"); } if (result.success) { let targetSheet = result.user.personalSheetId; if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUserName = result.user.name; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
-        function logout() { localStorage.clear(); location.reload(); }
-        async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; if (action !== 'READ' && action !== 'LOGIN' && action !== 'GET_CONFIG') { const btn = document.getElementById('submit-text'); if(btn) { btn.disabled = true; btn.innerHTML = 'Traitement...'; } } try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); const text = await response.text(); let result; try { result = JSON.parse(text); } catch(e) { throw new Error("Réponse serveur invalide"); } if (!result.success) throw new Error(result.error || result.message); return result; } catch (error) { console.error(error); return { success: false, error: error.message }; } finally { if (action !== 'READ' && action !== 'LOGIN' && action !== 'GET_CONFIG') { const btn = document.getElementById('submit-text'); if(btn) { btn.disabled = false; btn.textContent = "Enregistrer"; } } } }
+        
+        async function fetchAppsScript(action, data = {}) { 
+            if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG') data.targetSheetId = currentSheetId; 
+            if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; 
+            
+            try { 
+                const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); 
+                const text = await response.text(); 
+                let result; try { result = JSON.parse(text); } catch(e) { throw new Error("Réponse serveur invalide"); } 
+                if (!result.success) throw new Error(result.error || result.message); 
+                return result; 
+            } catch (error) { 
+                console.error(error); return { success: false, error: error.message }; 
+            } 
+        }
+        
         async function loadDeals() { if(!currentSheetId || currentSheetId === 'null') return; document.getElementById('loading-message').classList.remove('hidden'); try { const res = await fetchAppsScript('READ'); if (res.success) { allDealsCache = (res.deals || []).filter(d => d.nomPrenom && String(d.nomPrenom).trim() !== ""); renderAll(); } else { alert('Erreur chargement: ' + res.message); } } catch(e) {} document.getElementById('loading-message').classList.add('hidden'); }
+        
         function populateFormDropdowns() {
             const prodSelect = document.getElementById('formation'); const paySelect = document.getElementById('typePaiement'); const prodVal = prodSelect.value; const payVal = paySelect.value;
             prodSelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Sélectionner un produit...</option>'; 
             paySelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Sélectionner un paiement...</option>';
-            const userOrg = currentUser.org;
-            if(globalConfig.products) { globalConfig.products.filter(p => p.org === userOrg || !p.org).forEach(p => { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name + (p.price ? ` (${p.price}€)` : ''); opt.dataset.price = p.price; prodSelect.appendChild(opt); }); }
-            if(globalConfig.payments) { globalConfig.payments.filter(p => p.org === userOrg || !p.org).forEach(p => { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name; paySelect.appendChild(opt); }); }
+            const userOrg = (currentUser.org || "").trim().toLowerCase();
+            if(globalConfig.products) { globalConfig.products.forEach(p => { const pOrg = (p.org || "").trim().toLowerCase(); if(pOrg === userOrg || pOrg === "") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name + (p.price ? ` (${p.price}€)` : ''); opt.dataset.price = p.price; prodSelect.appendChild(opt); } }); }
+            if(globalConfig.payments) { globalConfig.payments.forEach(p => { const pOrg = (p.org || "").trim().toLowerCase(); if(pOrg === userOrg || pOrg === "") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name; paySelect.appendChild(opt); } }); }
             if(prodVal) prodSelect.value = prodVal; if(payVal) paySelect.value = payVal;
         }
-        function autoFillPrice() { const sel = document.getElementById('formation'); const opt = sel.options[sel.selectedIndex]; if(opt && opt.dataset.price) document.getElementById('prix').value = opt.dataset.price; }
+        window.autoFillPrice = function() { const sel = document.getElementById('formation'); const opt = sel.options[sel.selectedIndex]; if(opt && opt.dataset.price) document.getElementById('prix').value = opt.dataset.price; }
+        
         function renderSettingsView() { const prodBody = document.getElementById('settings-products-body'); const payBody = document.getElementById('settings-payments-body'); prodBody.innerHTML = ''; payBody.innerHTML = ''; (globalConfig.products || []).forEach((p, idx) => { prodBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('prod', ${idx}, 'org', this.value)" placeholder="Org..."></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('prod', ${idx}, 'name', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${p.price}" onchange="updateConfigLocal('prod', ${idx}, 'price', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('prod', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); (globalConfig.payments || []).forEach((p, idx) => { payBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('pay', ${idx}, 'org', this.value)" placeholder="Org..."></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('pay', ${idx}, 'name', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('pay', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
-        function addSettingRow(type) { const defaultOrg = currentUser.org || ""; if(type === 'products') { if(!globalConfig.products) globalConfig.products=[]; globalConfig.products.push({org: defaultOrg, name: 'Nouveau Produit', price: 0}); } if(type === 'payments') { if(!globalConfig.payments) globalConfig.payments=[]; globalConfig.payments.push({org: defaultOrg, name: 'Nouveau Paiement'}); } renderSettingsView(); }
-        function removeSettingRow(type, idx) { if(type === 'prod') globalConfig.products.splice(idx, 1); if(type === 'pay') globalConfig.payments.splice(idx, 1); renderSettingsView(); }
-        function updateConfigLocal(type, idx, field, val) { if(type === 'prod') globalConfig.products[idx][field] = val; if(type === 'pay') globalConfig.payments[idx][field] = val; }
-        async function saveSettings() { const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; }
+        
         function setupSuperAdminSelector() { const orgContainer = document.getElementById('superadmin-selector-container'); const orgSel = document.getElementById('superadmin-org-selector'); const managerContainer = document.getElementById('manager-selector-container'); orgContainer.classList.remove('hidden'); managerContainer.classList.add('hidden'); orgSel.innerHTML = '<option value="">Choisir Client...</option>'; Object.keys(superAdminData).forEach(orgName => { const opt = document.createElement('option'); opt.value = orgName; opt.textContent = orgName; orgSel.appendChild(opt); }); orgSel.addEventListener('change', (e) => { const selectedOrg = e.target.value; if(selectedOrg && superAdminData[selectedOrg]) { currentUser.org = selectedOrg; document.getElementById('org-display').textContent = selectedOrg; availableSheets = superAdminData[selectedOrg]; setupManagerSelector(availableSheets); currentSheetId = 'ALL'; document.getElementById('manager-view-selector').value = 'ALL'; loadDeals(); } else { managerContainer.classList.add('hidden'); } }); }
         function setupManagerSelector(sheets) { const sel = document.getElementById('manager-view-selector'); document.getElementById('manager-selector-container').classList.remove('hidden'); sel.innerHTML = '<option value="ALL">Vue Globale (Équipe)</option>'; sheets.forEach(s => { const opt = document.createElement('option'); opt.value = s.sheetId; opt.textContent = s.name; sel.appendChild(opt); }); sel.onchange = (e) => { currentSheetId = e.target.value; localStorage.setItem('crm_sheetId', currentSheetId); updateAddButtonVisibility(); loadDeals(); }; }
         function updateAddButtonVisibility() { const btn = document.getElementById('btn-add-deal'); if (currentSheetId === 'ALL' || !currentSheetId) btn.classList.add('hidden'); else btn.classList.remove('hidden'); }
-        function renderAll() { populateFormDropdowns(); populateFilters(); applyFilters(); if(document.getElementById('view-stats').classList.contains('hidden') === false) renderStats(); if(document.getElementById('view-settings').classList.contains('hidden') === false) renderSettingsView(); }
-        function applyFilters() { const m = document.getElementById('filter-month').value; const s = document.getElementById('filter-status').value; let list = allDealsCache; if (m !== 'all') list = list.filter(d => d.dateRDV && checkMonth(d.dateRDV, m)); if (s !== 'all') list = list.filter(d => checkStatus(d, s)); list.sort((a,b) => new Date(b.dateRDV||0) - new Date(a.dateRDV||0)); renderTable(list); updateKPIs(list); }
+        function renderAll() { populateFormDropdowns(); applyFilters(); if(document.getElementById('view-stats').classList.contains('hidden') === false) updateReports(); if(document.getElementById('view-settings').classList.contains('hidden') === false) renderSettingsView(); }
+        
+        // --- FILTERS ---
+        function applyFilters() { const m = document.getElementById('filter-month').value; const s = document.getElementById('filter-status').value; let list = allDealsCache; if (m !== 'all') list = list.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m)); if (s !== 'all') list = list.filter(d => checkStatus(d, s)); list.sort((a,b) => new Date(b.dateRDV||0) - new Date(a.dateRDV||0)); renderTable(list); updateKPIs(list); }
+        
+        // MISSING FUNCTIONS ADDED HERE
+        function checkMonthFilter(dateStr, filterValue) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            if (filterValue === 'current') {
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            }
+            return true;
+        }
+
+        function checkStatus(deal, statusValue) {
+            if (statusValue === 'followup') return deal.aFollowUp;
+            if (statusValue === 'closed') return deal.close;
+            if (statusValue === 'cancelled') return deal.cancelled;
+            if (statusValue === 'unqualified') return deal.unqualified;
+            if (statusValue === 'rescheduled') return deal.rescheduled;
+            return true;
+        }
+
         function renderTable(list) { const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); list.forEach(d => { const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button><button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
         function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
-        function renderStats() { /* Stats logic simplified */ }
-        function openSlideOver() { resetForm(); document.getElementById('slide-over-container').classList.remove('hidden'); setTimeout(() => { document.getElementById('slide-over-panel').classList.remove('translate-x-full'); }, 10); }
-        function closeSlideOver() { document.getElementById('slide-over-panel').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('slide-over-container').classList.add('hidden'); }, 300); }
-        function toggleExpand() { const panel = document.getElementById('slide-over-panel'); const icon = document.getElementById('expand-icon'); if (panel.classList.contains('max-w-md')) { panel.classList.remove('max-w-md'); panel.classList.add('max-w-4xl'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } else { panel.classList.add('max-w-md'); panel.classList.remove('max-w-4xl'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); } }
-        document.getElementById('deal-form').addEventListener('submit', async (e) => { e.preventDefault(); const data = { id: editingId, nomPrenom: document.getElementById('nomPrenom').value, source: document.getElementById('source').value, entrepreneur: document.getElementById('entrepreneur').value, dateRDV: document.getElementById('dateRDV').value, email: document.getElementById('email').value, numero: document.getElementById('numero').value, enregistrementCall: document.getElementById('enregistrementCall').value, close: document.getElementById('close').checked, aFollowUp: document.getElementById('aFollowUp').checked, ghost: document.getElementById('ghost').checked, nonClose: document.getElementById('nonClose').checked, cancelled: document.getElementById('cancelled').checked, unqualified: document.getElementById('unqualified').checked, rescheduled: document.getElementById('rescheduled').checked, formation: document.getElementById('formation').value, prix: parseFloat(document.getElementById('prix').value)||0, typePaiement: document.getElementById('typePaiement').value, mensualite: parseFloat(document.getElementById('mensualite').value)||0, newCommentText: editingId ? document.getElementById('newComment').value : null, commentaireHistory: !editingId ? document.getElementById('newComment').value : null }; const res = await fetchAppsScript(editingId ? 'UPDATE' : 'CREATE', { data }); if(res.success) { closeSlideOver(); loadDeals(); } });
-        window.editDeal = function(id) { const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id; document.getElementById('nomPrenom').value = d.nomPrenom; document.getElementById('source').value = d.source; document.getElementById('entrepreneur').value = d.entrepreneur; document.getElementById('dateRDV').value = d.dateRDV; document.getElementById('email').value = d.email; document.getElementById('numero').value = d.numero; document.getElementById('enregistrementCall').value = d.enregistrementCall; document.getElementById('close').checked = d.close; document.getElementById('aFollowUp').checked = d.aFollowUp; document.getElementById('ghost').checked = d.ghost; document.getElementById('nonClose').checked = d.nonClose; document.getElementById('cancelled').checked = d.cancelled||false; document.getElementById('unqualified').checked = d.unqualified||false; document.getElementById('rescheduled').checked = d.rescheduled||false; toggleClosing(); document.getElementById('formation').value = d.formation; document.getElementById('prix').value = d.prix; document.getElementById('typePaiement').value = d.typePaiement; document.getElementById('mensualite').value = d.mensualite; const hist = document.getElementById('comment-history'); if(d.commentaireHistory) { hist.textContent = d.commentaireHistory; hist.classList.remove('hidden'); } else hist.classList.add('hidden'); document.getElementById('newComment').value = ''; document.getElementById('slide-over-container').classList.remove('hidden'); setTimeout(() => { document.getElementById('slide-over-panel').classList.remove('translate-x-full'); }, 10); };
-        window.deleteDeal = async function(id) { if(!confirm("Supprimer ?")) return; await fetchAppsScript('DELETE', { data: {id} }); loadDeals(); };
-        window.viewHistory = function(id) { const d = allDealsCache.find(x => x.id === id); document.getElementById('modal-history-content').textContent = d.commentaireHistory || 'Aucune note'; document.getElementById('history-modal').classList.remove('hidden'); };
-        function checkMonth(dStr, mode) { if(mode === 'all') return true; const d = new Date(dStr); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }
-        function checkStatus(d, s) { if(s === 'all') return true; if(s === 'followup') return d.aFollowUp; if(s === 'closed') return d.close; if(s === 'cancelled') return d.cancelled; if(s === 'unqualified') return d.unqualified; return true; }
+        
+        // --- REPORTING ---
+        function updateReports() {
+            const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            const dataMonth = {}, dataSource = {}; let totalCASigned = 0, totalCash = 0, totalWins = 0, totalPres = 0;
+            allDealsCache.forEach(d => {
+                if(!d.dateRDV) return; const date = new Date(d.dateRDV); const mName = months[date.getMonth()];
+                const sName = d.source || 'Inconnu';
+                const signed = safeFloat(d.prix); const cash = d.mensualite ? safeFloat(d.mensualite) : signed;
+                if(d.close) { totalCASigned += signed; totalCash += cash; totalWins++; }
+                if(!d.ghost && !d.cancelled && !d.rescheduled) totalPres++;
+                if(!dataMonth[mName]) dataMonth[mName] = { ca: 0, cash: 0 };
+                if(!dataSource[sName]) dataSource[sName] = { count: 0, win: 0, ca: 0 };
+                if(d.close) { dataMonth[mName].ca += signed; dataMonth[mName].cash += cash; }
+                dataSource[sName].count++;
+                if(d.close) { dataSource[sName].win++; dataSource[sName].ca += signed; }
+            });
+            document.getElementById('report-ca-sign').textContent = totalCASigned.toLocaleString('fr-FR') + ' €';
+            document.getElementById('report-ca-cash').textContent = totalCash.toLocaleString('fr-FR') + ' €';
+            document.getElementById('report-tx-close').textContent = totalPres ? Math.round((totalWins/totalPres)*100) + '%' : '0%';
+            document.getElementById('report-avg-cart').textContent = totalWins ? Math.round(totalCASigned/totalWins).toLocaleString('fr-FR') + ' €' : '0 €';
+            renderFinanceChart(months, dataMonth); renderFunnelChart(allDealsCache.length, totalPres, totalWins); renderSourceTable(dataSource);
+        }
+        let financeChart, funnelChart;
+        function renderFinanceChart(labels, dataObj) {
+            const ctx = document.getElementById('chart-finance').getContext('2d');
+            const caData = labels.map(m => dataObj[m] ? dataObj[m].ca : 0);
+            const cashData = labels.map(m => dataObj[m] ? dataObj[m].cash : 0);
+            if(financeChart) financeChart.destroy();
+            financeChart = new Chart(ctx, { type: 'bar', data: { labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1,3)), datasets: [ { label: 'CA Signé', data: caData, backgroundColor: '#f59e0b', borderRadius: 4 }, { label: 'Cash In', data: cashData, backgroundColor: '#10b981', borderRadius: 4 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } } });
+        }
+        function renderFunnelChart(total, pres, wins) {
+            const ctx = document.getElementById('chart-funnel').getContext('2d');
+            if(funnelChart) funnelChart.destroy();
+            funnelChart = new Chart(ctx, { type: 'bar', indexAxis: 'y', data: { labels: ['Total RDV', 'Présence', 'Ventes'], datasets: [{ label: 'Volume', data: [total, pres, wins], backgroundColor: ['#6366f1', '#3b82f6', '#10b981'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#cbd5e1', font: { weight: 'bold' } }, grid: { display: false } } } } });
+        }
+        function renderSourceTable(data) {
+            const tbody = document.getElementById('stats-source-body'); tbody.innerHTML = '';
+            Object.keys(data).sort((a,b) => data[b].ca - data[a].ca).forEach(k => {
+                const s = data[k]; const tx = s.count ? Math.round((s.win/s.count)*100) : 0;
+                tbody.innerHTML += `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3 text-slate-300 font-medium">${k}</td><td class="p-3 text-center text-slate-500">${s.count}</td><td class="p-3 text-center text-emerald-400 font-bold">${s.win}</td><td class="p-3 text-center text-indigo-400">${tx}%</td><td class="p-3 text-right text-amber-500 font-mono">${s.ca.toLocaleString()} €</td><td class="p-3 text-right text-emerald-400 font-mono">${(s.ca).toLocaleString()} €</td></tr>`;
+            });
+        }
+
         function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
         document.getElementById('close').addEventListener('change', toggleClosing);
         function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); }
         function formatDateFR(s) { if(!s) return '-'; const d = new Date(s); return d.toLocaleDateString('fr-FR'); }
-        function populateFilters() {}
         document.getElementById('filter-month').addEventListener('change', applyFilters); document.getElementById('filter-status').addEventListener('change', applyFilters); document.getElementById('reset-filters').addEventListener('click', () => { document.getElementById('filter-month').value = 'current'; document.getElementById('filter-status').value = 'all'; applyFilters(); });
-        function switchView(viewId) { document.getElementById('view-dashboard').classList.add('hidden'); document.getElementById('view-stats').classList.add('hidden'); document.getElementById('view-settings').classList.add('hidden'); const target = document.getElementById(`view-${viewId}`); target.classList.remove('hidden'); document.getElementById('page-title').textContent = viewId === 'dashboard' ? 'Tableau de Bord' : (viewId === 'stats' ? 'Rapports & Statistiques' : 'Paramètres Généraux'); const topbarActions = document.getElementById('topbar-actions'); if(viewId === 'stats' || viewId === 'settings') topbarActions.classList.add('hidden'); else topbarActions.classList.remove('hidden'); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        function safeFloat(val) { const s = String(val).replace(/[^0-9.-]/g, ''); const f = parseFloat(s); return isNaN(f) ? 0 : f; }
 
         initAuth();
     </script>
