@@ -232,8 +232,8 @@
                                 <!-- NEW FIELDS INFO ONLY -->
                                 <div class="col-span-2 grid grid-cols-3 gap-2 border-t border-emerald-500/20 pt-2 mt-1">
                                     <div class="form-group"><label class="text-slate-500">Reste</label><input type="text" id="reste" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
-                                    <div class="form-group"><label class="text-slate-500">Mens. à venir</label><input type="text" id="nbMens" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
-                                    <div class="form-group"><label class="text-slate-500">Jour Prélvt</label><input type="text" id="jour" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
+                                    <div class="form-group"><label class="text-emerald-500">Mens. à venir</label><input type="number" id="nbMens" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="#"></div>
+                                    <div class="form-group"><label class="text-emerald-500">Jour Prélvt</label><input type="number" id="jour" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="JJ"></div>
                                 </div>
                             </div>
                         </div>
@@ -394,23 +394,32 @@
         window.autoFillPrice = function() { 
             const prodVal = document.getElementById('formation').value;
             const payVal = document.getElementById('typePaiement').value;
+            
             if (!prodVal) return;
 
             let foundRule = null;
             if (payVal && globalConfig.rules) {
+                // Chercher une règle spécifique : Produit X + Paiement Y
                 foundRule = globalConfig.rules.find(r => r.product === prodVal && r.payment === payVal);
             }
 
             if (foundRule) {
+                // Si règle trouvée, on applique Total et Cash
                 document.getElementById('prix').value = foundRule.total;
                 document.getElementById('mensualite').value = foundRule.cash;
                 document.getElementById('nbMens').value = foundRule.nbMens;
                 document.getElementById('jour').value = foundRule.jour || new Date().getDate(); // Default to today
             } else {
+                // Sinon, on remplit juste le prix par défaut du produit
                 const prodSelect = document.getElementById('formation');
                 const opt = prodSelect.options[prodSelect.selectedIndex];
-                if(opt && opt.dataset.price && (!document.getElementById('prix').value || !payVal)) {
-                    document.getElementById('prix').value = opt.dataset.price;
+                if(opt && opt.dataset.price) {
+                    const defaultPrice = opt.dataset.price;
+                    // Si le champ est vide ou si on change de produit, on met le défaut. 
+                    // On évite d'écraser si l'utilisateur a déjà saisi un truc manuel.
+                    if (!document.getElementById('prix').value || !payVal) {
+                        document.getElementById('prix').value = defaultPrice;
+                    }
                 }
             }
             calcRest();
@@ -427,12 +436,12 @@
             (globalConfig.rules || []).forEach((r, idx) => { 
                 rulesBody.innerHTML += `<tr>
                     <td class="p-2"><input type="text" class="form-input" value="${r.org}" onchange="updateConfigLocal('rules', ${idx}, 'org', this.value)"></td>
-                    <td class="p-2"><input type="text" class="form-input font-bold text-emerald-400" value="${r.product}" placeholder="Nom Produit..." onchange="updateConfigLocal('rules', ${idx}, 'product', this.value)"></td>
-                    <td class="p-2"><input type="text" class="form-input text-indigo-400" value="${r.payment}" placeholder="Nom Paiement..." onchange="updateConfigLocal('rules', ${idx}, 'payment', this.value)"></td>
-                    <td class="p-2"><input type="number" class="form-input w-24" value="${r.total}" onchange="updateConfigLocal('rules', ${idx}, 'total', this.value)"></td>
-                    <td class="p-2"><input type="number" class="form-input w-24" value="${r.cash}" onchange="updateConfigLocal('rules', ${idx}, 'cash', this.value)"></td>
-                    <td class="p-2"><input type="number" class="form-input w-16" value="${r.nbMens}" placeholder="#" onchange="updateConfigLocal('rules', ${idx}, 'nbMens', this.value)"></td>
-                    <td class="p-2"><input type="text" class="form-input w-16" value="${r.jour}" placeholder="J" onchange="updateConfigLocal('rules', ${idx}, 'jour', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input font-bold text-emerald-400" value="${r.product}" placeholder="Nom Produit Exact..." onchange="updateConfigLocal('rules', ${idx}, 'product', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input text-indigo-400" value="${r.payment}" placeholder="Nom Paiement Exact..." onchange="updateConfigLocal('rules', ${idx}, 'payment', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input" value="${r.total}" onchange="updateConfigLocal('rules', ${idx}, 'total', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input" value="${r.cash}" onchange="updateConfigLocal('rules', ${idx}, 'cash', this.value)"></td>
+                    <td class="p-2"><input type="number" class="form-input" value="${r.nbMens}" placeholder="#" onchange="updateConfigLocal('rules', ${idx}, 'nbMens', this.value)"></td>
+                    <td class="p-2"><input type="text" class="form-input" value="${r.jour}" placeholder="J" onchange="updateConfigLocal('rules', ${idx}, 'jour', this.value)"></td>
                     <td class="p-2 text-right"><button onclick="removeSettingRow('rules', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>`; 
             });
