@@ -218,7 +218,7 @@
                     </div>
 
                     <!-- 4. LEADERBOARD (MANAGER ONLY) -->
-                    <div id="stats-leaderboard-container" class="hidden pt-6 border-t dark:border-slate-700 border-slate-200">
+                    <div id="stats-leaderboard-container" class="pt-6 border-t dark:border-slate-700 border-slate-200">
                         <h3 class="text-lg font-bold dark:text-white text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-users"></i> Classement Équipe</h3>
                         <div class="overflow-x-auto rounded-xl border dark:border-slate-700 border-slate-200">
                             <table class="min-w-full text-sm">
@@ -627,7 +627,12 @@
                     document.getElementById('nav-settings').classList.remove('hidden'); 
                     document.getElementById('settings-admin-section').classList.remove('hidden'); // VISIBLE POUR SUPER ADMIN
                 } 
-                else if(currentUser.role === 'manager' || currentUser.role === 'admin') { availableSheets = data.teamSheets || []; setupManagerSelector(availableSheets); document.getElementById('nav-settings').classList.remove('hidden'); } 
+                else if(currentUser.role === 'manager' || currentUser.role === 'admin' || currentUser.role === 'closer') { // MODIF V4.7 : Closer inclus
+                    availableSheets = data.teamSheets || []; 
+                    setupManagerSelector(availableSheets); 
+                    // Pour Managers/Admin on laisse le bouton settings
+                    if(currentUser.role !== 'closer') document.getElementById('nav-settings').classList.remove('hidden'); 
+                } 
                 else { if (!currentSheetId || currentSheetId === 'null') { 
                     currentSheetId = currentUser.sheetId || currentUser.personalSheetId; 
                     localStorage.setItem('crm_sheetId', currentSheetId); 
@@ -638,7 +643,7 @@
         function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
         document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const result = JSON.parse(await response.text()); if (result.success) { 
             let targetSheet = result.user.sheetId || result.user.personalSheetId; 
-            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
+            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin' || result.user.role === 'closer') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
         
         async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG' && action !== 'CREATE_USER' && action !== 'GET_USERS' && action !== 'DELETE_USER') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { console.error(error); return { success: false, error: error.message }; } }
         async function loadDeals() { 
@@ -792,8 +797,10 @@
                 if(d.close) { caSigned += price; cashCollected += cash; }
 
                 // 3. Leaderboard Aggregation
-                const owner = d.ownerName || currentUser.name || "Moi";
-                const role = d.ownerRole || "Closer"; // NEW: Récupération du rôle
+                // MODIFICATION V4.6 : Fallback sécurisé pour l'affichage en mode équipe.
+                // Si le nom du closer est manquant (backend) et qu'on est en vue 'ALL' (équipe), on affiche "Inconnu" plutôt que le nom du Super Admin.
+                const owner = d.ownerName || (currentSheetId === 'ALL' ? "Inconnu" : (currentUser.name || "Moi"));
+                const role = d.ownerRole || "Closer";
                 
                 if(!teamStats[owner]) teamStats[owner] = { booked: 0, shows: 0, wins: 0, ca: 0, role: role };
                 
@@ -845,8 +852,8 @@
             document.getElementById('stat-aov').textContent = aov.toLocaleString('fr-FR') + ' €';
             document.getElementById('stat-rps').textContent = rps.toLocaleString('fr-FR') + ' €';
 
-            // 6. Rendu Leaderboard (Si Manager/Admin)
-            if(currentUser.role !== 'closer') {
+            // 6. Rendu Leaderboard (TOUT LE MONDE Y A ACCES)
+            // if(currentUser.role !== 'closer') { // MODIF V4.7 : Suppression restriction
                 document.getElementById('stats-leaderboard-container').classList.remove('hidden');
                 const tbody = document.getElementById('leaderboard-body');
                 tbody.innerHTML = '';
@@ -875,7 +882,7 @@
                         <td class="p-4 text-right font-mono text-xs dark:text-slate-400 text-slate-500">${rpsUser.toLocaleString()} €</td>
                     </tr>`;
                 });
-            }
+            // }
         }
 
         function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
