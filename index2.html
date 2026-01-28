@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900 dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell It CRM</title>
+    <!-- Favicon Rocket (Amber-500) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23f59e0b' d='M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7 .2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1 .2s-12.1-12.2-12.1-20.9l0-105.8c-13.2 4.8-24.9 8.8-33.8 11.8c-11.4 3.8-23.7 .8-32.2-7.7z'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { color-scheme: dark; }
+        body { font-family: 'Outfit', sans-serif; background: #0f172a; color: #cbd5e1; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .glass-header { border-bottom: 1px solid; transition: all 0.3s; background: #1e293b; border-color: #334155; }
+        .form-input { @apply block w-full rounded-lg border-0 ring-1 ring-inset py-2.5 px-3 text-sm shadow-sm transition-all outline-none bg-transparent; }
+        .form-input { @apply ring-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-amber-500 focus:bg-slate-800; }
+        .form-group label { @apply block text-[10px] font-bold uppercase tracking-wider mb-1.5 ml-1 transition-colors opacity-70; }
+        .status-pill { @apply px-3 py-2 rounded-lg text-xs font-bold border border-transparent transition-all cursor-pointer flex items-center justify-center gap-2 select-none opacity-60 hover:opacity-100 bg-slate-800 text-slate-400; }
+        .status-pill.active { @apply opacity-100 ring-2 ring-offset-2 ring-offset-slate-900; }
+        .slide-over { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        #slide-over-panel { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        /* Navigation Active State */
+        .nav-btn.active { @apply bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm dark:bg-white/5 dark:text-amber-400 dark:border-white/10 dark:shadow-inner; }
+        .nav-btn.inactive { @apply text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white; }
+    </style>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#0f172a', secondary: '#1e293b', accent: '#f59e0b' } } } }
+    </script>
+</head>
+<body class="h-full overflow-hidden font-medium dark">
+
+    <!-- LOGIN -->
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4 text-center fade-in">
+            <div class="mb-8 flex flex-col justify-center items-center gap-3">
+                <div class="h-14 w-14 bg-gradient-to-br from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-amber-500/20"><i class="fa-solid fa-rocket"></i></div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">SELL IT <span class="text-amber-500">CRM</span></h1>
+            </div>
+            <form id="login-form" class="space-y-5 text-left">
+                <div class="form-group"><label>Identifiant</label><input type="text" id="login-user" class="form-input" placeholder="Votre pseudo"></div>
+                <div class="form-group"><label>Mot de passe</label><input type="password" id="login-pass" class="form-input" placeholder="••••••••"></div>
+                <div id="login-error" class="text-white bg-red-500/20 border border-red-500/50 p-3 rounded-lg text-xs hidden text-center font-bold"></div>
+                <button type="submit" id="login-btn" class="w-full py-3.5 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold hover:from-amber-500 hover:to-yellow-500 transition-all shadow-lg shadow-amber-900/20">Se Connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app-content" class="hidden h-full flex w-full">
+        <!-- SIDEBAR -->
+        <div class="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 z-50 border-r transition-colors duration-300 dark:bg-slate-900 dark:border-slate-800 dark:shadow-xl bg-white border-slate-200 shadow-sm">
+            <div class="flex flex-col flex-1 min-h-0">
+                <div class="flex items-center h-20 px-6 border-b dark:border-slate-800 border-slate-100 gap-3">
+                    <div class="h-8 w-8 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md"><i class="fa-solid fa-rocket text-xs"></i></div>
+                    <span class="text-xl font-bold dark:text-white text-slate-900 tracking-wide">SELL IT <span class="text-amber-500">CRM</span></span>
+                </div>
+                <div class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                    <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"><i class="fa-solid fa-chart-line mr-3 w-5 text-center"></i> Pipeline</button>
+                    <button onclick="switchView('stats')" id="nav-stats" class="nav-btn w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"><i class="fa-solid fa-chart-pie mr-3 w-5 text-center"></i> Statistiques</button>
+                    <button onclick="switchView('settings')" id="nav-settings" class="nav-btn hidden w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"><i class="fa-solid fa-cog mr-3 w-5 text-center"></i> Paramètres</button>
+                </div>
+                <div class="p-4 border-t dark:border-slate-800 dark:bg-slate-950/30 border-slate-100 bg-slate-50/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-bold dark:text-white text-slate-800 truncate w-24" id="user-display">User</p>
+                        <span class="text-[10px] dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded border dark:border-amber-500/30 bg-indigo-100 text-indigo-700 border-indigo-200" id="role-display">Role</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="logout()" class="flex-1 py-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-white dark:hover:bg-red-500/20 rounded-lg border dark:border-red-500/10 border-red-100 transition-colors">Déconnexion</button>
+                    </div>
+                    <p class="text-[10px] text-slate-600 mt-2 text-center truncate font-mono" id="org-display">Org</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="md:pl-72 flex flex-col flex-1 h-full overflow-hidden relative">
+            <div class="glass-header h-16 flex items-center justify-between px-8 sticky top-0 z-20 transition-colors duration-300">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-bold dark:text-white text-slate-800" id="page-title">Pipeline</h2>
+                    <div id="loading-indicator" class="hidden px-2.5 py-0.5 rounded-full dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30 bg-indigo-50 text-indigo-700 border-indigo-100 text-xs font-medium flex items-center"><svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 dark:text-indigo-400 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Sync...</div>
+                </div>
+                <div class="flex items-center gap-4" id="topbar-actions">
+                    <div id="superadmin-selector-container" class="hidden"><select id="superadmin-org-selector" class="form-input !py-1.5 !text-xs font-bold cursor-pointer !w-40"><option value="">Choisir Client...</option></select></div>
+                    <div id="manager-selector-container" class="hidden"><select id="manager-view-selector" class="form-input !py-1.5 !text-xs font-bold cursor-pointer !w-40"><option value="ALL">Vue Globale</option></select></div>
+                    <button onclick="openSlideOver()" id="btn-add-deal" class="group px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 dark:from-amber-600 dark:to-yellow-600 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-2"></i> Deal</button>
+                </div>
+            </div>
+
+            <main class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scroll">
+                <!-- VIEW: DASHBOARD -->
+                <div id="view-dashboard" class="space-y-8 fade-in">
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200">
+                            <p class="text-sm font-medium dark:text-slate-400 text-slate-500 mb-1">Total Deals (Vue)</p><p class="text-3xl font-bold dark:text-white text-slate-800" id="metric-total">0</p>
+                        </div>
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 border-l-4 border-l-indigo-500 dark:border-l-indigo-400">
+                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-1 font-bold">À Relancer</p><p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400" id="metric-followup">0</p>
+                        </div>
+                        <div class="dark:bg-slate-800 bg-white p-6 rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 border-l-4 border-l-emerald-500 dark:border-l-emerald-400">
+                            <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1 font-bold">Closés</p><p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400" id="metric-closed">0</p>
+                        </div>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="dark:bg-slate-800 bg-white shadow-sm rounded-2xl border dark:border-slate-700 border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b dark:border-slate-700 border-slate-200 flex gap-3 overflow-x-auto items-center">
+                            <!-- SEARCH BAR -->
+                            <div class="relative mr-2">
+                                <input type="text" id="search-bar" placeholder="Rechercher un prospect..." class="form-input !w-60 !py-2 !pl-9 !text-xs font-medium">
+                                <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            </div>
+                            
+                            <select id="filter-month" class="form-input !w-auto !py-2 !pl-3 !pr-8">
+                                <option value="all" selected>Tout l'historique</option>
+                                <option value="current">Ce mois</option>
+                                <option value="week">Cette semaine</option> 
+                            </select>
+                            <select id="filter-status" class="form-input !w-auto !py-2 !pl-3 !pr-8">
+                                <option value="all">Tous statuts</option><option value="followup">⚡ Relance</option><option value="closed">💰 Closé</option><option value="cancelled">🚫 Annulé</option><option value="unqualified">💩 Non Qualif</option><option value="rescheduled">📅 Reporté</option>
+                            </select>
+                            <div class="flex-1"></div>
+                            <button id="reset-filters" class="text-xs font-bold dark:text-slate-500 text-slate-400 hover:text-amber-500 uppercase transition-colors">Reset</button>
+                        </div>
+                        <div class="overflow-x-auto min-h-[400px] relative">
+                            <div id="loading-message" class="hidden absolute inset-0 dark:bg-slate-900/80 bg-white/80 z-10 flex flex-col items-center justify-center backdrop-blur-sm"><div class="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-3"></div><p class="text-sm font-medium dark:text-slate-400 text-slate-500">Chargement...</p></div>
+                            <div id="no-data-message" class="hidden absolute inset-0 flex flex-col items-center justify-center dark:text-slate-600 text-slate-400 text-sm"><i class="fa-solid fa-inbox text-4xl mb-3 opacity-50"></i>Aucun résultat trouvé.</div>
+                            <table class="min-w-full divide-y dark:divide-slate-700 divide-slate-100">
+                                <thead class="dark:bg-slate-900/50 bg-slate-50"><tr><th class="px-6 py-4 text-left text-xs font-bold dark:text-slate-400 text-slate-500 uppercase tracking-wider">Prospect</th><th class="px-6 py-4 text-left text-xs font-bold dark:text-slate-400 text-slate-500 uppercase tracking-wider">Date</th><th class="px-6 py-4 text-left text-xs font-bold dark:text-slate-400 text-slate-500 uppercase tracking-wider">Offre</th><th class="px-6 py-4 text-left text-xs font-bold dark:text-slate-400 text-slate-500 uppercase tracking-wider">Statut</th><th class="px-6 py-4 text-right"></th></tr></thead>
+                                <tbody id="deals-table-body" class="divide-y dark:divide-slate-700 divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: STATS (REFONTE TOTALE) -->
+                <div id="view-stats" class="hidden space-y-8 fade-in">
+                    <!-- 1. LE CARBURANT (VOLUME) -->
+                    <div>
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-gas-pump"></i> Volume</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">RDV Bookés</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-booked">0</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-500/20">
+                                <p class="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase">✅ RDV Tenus (Shows)</p>
+                                <p class="text-2xl font-extrabold text-indigo-700 dark:text-indigo-300 mt-1" id="stat-shows">0</p>
+                                <p class="text-[10px] text-indigo-400 mt-1 font-mono" id="stat-show-rate">Show Rate: 0%</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-amber-500 font-bold uppercase">👻 Ghost / No-Show</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-ghost">0</p>
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono" id="stat-ghost-rate">0%</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-blue-500 font-bold uppercase">📅 Reportés</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-rescheduled">0</p>
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono" id="stat-rescheduled-rate">0%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. LA COMPETENCE (CONVERSION) -->
+                    <div>
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-filter"></i> Conversion</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="stat-card p-5 rounded-xl border bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-500/20">
+                                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase">🏆 Ventes (Wins)</p>
+                                <p class="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1" id="stat-wins">0</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                                <div class="absolute right-0 top-0 p-4 opacity-5"><i class="fa-solid fa-bullseye text-5xl"></i></div>
+                                <p class="text-xs text-purple-500 font-bold uppercase">🎯 Close Rate (sur Shows)</p>
+                                <p class="text-3xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-close-rate">0%</p>
+                                <div class="w-full bg-slate-700 h-1 mt-2 rounded-full overflow-hidden"><div id="bar-close-rate" class="bg-purple-500 h-full" style="width: 0%"></div></div>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-red-400 font-bold uppercase">❌ Perdus (sur Shows)</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-loss-rate">0%</p>
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono" id="stat-loss-nb">0 Deals</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-orange-400 font-bold uppercase">💩 Non Qualifié</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-nq-rate">0%</p>
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono" id="stat-nq-nb">0 Deals</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. BUSINESS (FINANCE) -->
+                    <div>
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-sack-dollar"></i> Business</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="stat-card p-5 rounded-xl border dark:border-amber-500/30 border-amber-200 bg-amber-50 dark:bg-amber-900/10">
+                                <p class="text-xs text-amber-600 dark:text-amber-400 font-bold uppercase">CA Signé Total</p>
+                                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-300 mt-1" id="stat-ca">0 €</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:border-emerald-500/30 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/10">
+                                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase">Cash Encaissé</p>
+                                <p class="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1" id="stat-cash">0 €</p>
+                                <p class="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 mt-1 font-bold" id="stat-collection">Encaissement: 0%</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700">
+                                <p class="text-xs text-blue-400 font-bold uppercase">🛒 Panier Moyen (AOV)</p>
+                                <p class="text-2xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-aov">0 €</p>
+                            </div>
+                            <div class="stat-card p-5 rounded-xl border dark:bg-slate-800 bg-white border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                                <div class="absolute right-0 bottom-0 p-4 opacity-5"><i class="fa-solid fa-rocket text-5xl"></i></div>
+                                <p class="text-xs text-indigo-400 font-bold uppercase">🚀 Revenue Per Show</p>
+                                <p class="text-3xl font-extrabold dark:text-white text-slate-800 mt-1" id="stat-rps">0 €</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Valeur d'un appel tenu</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. LEADERBOARD (MANAGER ONLY) -->
+                    <div id="stats-leaderboard-container" class="hidden pt-6 border-t dark:border-slate-700 border-slate-200">
+                        <h3 class="text-lg font-bold dark:text-white text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-users"></i> Classement Équipe</h3>
+                        <div class="overflow-x-auto rounded-xl border dark:border-slate-700 border-slate-200">
+                            <table class="min-w-full text-sm">
+                                <thead class="dark:bg-slate-900 bg-slate-100 text-xs font-bold uppercase dark:text-slate-400 text-slate-500">
+                                    <tr>
+                                        <th class="p-4 text-left">Closer</th>
+                                        <th class="p-4 text-left">Rôle</th>
+                                        <th class="p-4 text-center">Shows</th>
+                                        <th class="p-4 text-center">Ventes</th>
+                                        <th class="p-4 text-center">Close Rate</th>
+                                        <th class="p-4 text-right">CA Signé</th>
+                                        <th class="p-4 text-right">RPS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-body" class="divide-y dark:divide-slate-700 divide-slate-200 dark:bg-slate-800 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: SETTINGS -->
+                <div id="view-settings" class="hidden space-y-8 fade-in">
+                    <!-- SECTION ADMIN : TABLEAU DE BORD ÉQUIPE (NOUVEAU) -->
+                    <div id="settings-admin-section" class="hidden dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6 border-l-4 border-l-purple-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold dark:text-white text-slate-800">👥 Console Utilisateurs</h3>
+                                <p class="text-xs text-slate-500">Gérez les accès et les rôles de votre équipe.</p>
+                            </div>
+                            <button onclick="openUserModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-xs transition-colors flex items-center gap-2"><i class="fa-solid fa-user-plus"></i> Nouveau Utilisateur</button>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border dark:border-slate-700 border-slate-200">
+                            <table class="min-w-full text-sm text-left">
+                                <thead class="dark:bg-slate-900 bg-slate-100 uppercase text-xs font-bold dark:text-slate-400 text-slate-600">
+                                    <tr>
+                                        <th class="p-4">Identifiant</th>
+                                        <th class="p-4">Nom</th>
+                                        <th class="p-4">Rôle</th>
+                                        <th class="p-4">Organisation</th>
+                                        <th class="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-body" class="divide-y dark:divide-slate-700 divide-slate-200 bg-slate-50 dark:bg-slate-800/50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SECTION REGLES TARIFAIRES -->
+                    <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6 border-l-4 border-l-emerald-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold dark:text-white text-slate-800">⚡ Règles Automatiques (Calculateur)</h3>
+                                <p class="text-xs text-slate-500">Définissez les prix automatiquement selon le Produit et le Paiement.</p>
+                            </div>
+                            <button onclick="addSettingRow('rules')" class="px-3 py-1.5 bg-emerald-500 text-white rounded text-xs font-bold hover:bg-emerald-600 transition-colors">+ Nouvelle Règle</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600">
+                                    <tr>
+                                        <th class="p-3 text-left">Organisation</th>
+                                        <th class="p-3 text-left">Si Produit =</th>
+                                        <th class="p-3 text-left">Et Paiement =</th>
+                                        <th class="p-3 text-left w-24">Total (€)</th>
+                                        <th class="p-3 text-left w-24">Cash (€)</th>
+                                        <th class="p-3 text-left w-16">Mens.</th>
+                                        <th class="p-3 text-left w-16">Jour</th>
+                                        <th class="p-3 text-right w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="settings-rules-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
+                            <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Produits</h3><p class="text-xs text-slate-500">Liste de base des produits.</p></div><button onclick="addSettingRow('products')" class="px-3 py-1.5 bg-amber-500 text-white rounded text-xs font-bold hover:bg-amber-600 transition-colors">+ Ajouter</button></div>
+                            <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Org</th><th class="p-3 text-left">Nom</th><th class="p-3 text-left w-24">Prix Défaut</th><th class="p-3 text-right w-12"></th></tr></thead><tbody id="settings-products-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+                        </div>
+                        <div class="dark:bg-slate-800 bg-white rounded-2xl shadow-sm border dark:border-slate-700 border-slate-200 p-6">
+                            <div class="flex justify-between items-center mb-6"><div><h3 class="text-lg font-bold dark:text-white text-slate-800">Paiements</h3><p class="text-xs text-slate-500">Options de paiement (3x, Comptant...).</p></div><button onclick="addSettingRow('payments')" class="px-3 py-1.5 bg-indigo-500 text-white rounded text-xs font-bold hover:bg-indigo-600 transition-colors">+ Ajouter</button></div>
+                            <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600"><tr><th class="p-3 text-left w-24">Org</th><th class="p-3 text-left">Nom</th><th class="p-3 text-right w-12"></th></tr></thead><tbody id="settings-payments-body" class="divide-y dark:divide-slate-700 divide-slate-200"></tbody></table></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-4 border-t dark:border-slate-700 border-slate-200"><button onclick="saveSettings()" id="btn-save-settings" class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-500 shadow-lg transition-all">Sauvegarder la Configuration</button></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODERN SLIDE OVER -->
+    <div id="slide-over-container" class="hidden fixed inset-0 z-50 overflow-hidden">
+        <div class="absolute inset-0 dark:bg-black/70 bg-slate-900/20 backdrop-blur-sm transition-opacity" onclick="closeSlideOver()"></div>
+        <div id="slide-over-panel" class="absolute inset-y-0 right-0 max-w-lg w-full dark:bg-slate-900 bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full dark:border-l dark:border-slate-800">
+            <div class="px-6 py-5 border-b dark:border-slate-800 border-slate-100 flex justify-between items-center dark:bg-slate-900 bg-white z-10">
+                <div class="flex items-center gap-4">
+                    <div id="prospect-avatar" class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">?</div>
+                    <div><h2 class="text-xl font-bold dark:text-white text-slate-800 leading-tight" id="slide-over-title">Nouveau Deal</h2><div class="flex items-center gap-2 mt-0.5"><button id="btn-quick-copy" class="text-[10px] uppercase font-bold tracking-wide text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"><i class="fa-regular fa-copy"></i> Copier Email</button></div></div>
+                </div>
+                <div class="flex items-center gap-2"><button onclick="toggleExpand()" class="h-9 w-9 rounded-full flex items-center justify-center dark:text-slate-400 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"><i id="expand-icon" class="fa-solid fa-expand"></i></button><button onclick="closeSlideOver()" class="h-9 w-9 rounded-full flex items-center justify-center dark:text-slate-400 text-slate-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+            </div>
+
+            <form id="deal-form" class="flex-1 flex flex-col overflow-y-auto custom-scroll dark:bg-slate-900 bg-white relative">
+                <div class="px-6 py-6 space-y-8">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4"><div class="form-group col-span-2"><label>Nom du Prospect</label><input type="text" id="nomPrenom" required class="form-input text-lg font-semibold" placeholder="Ex: Jean Dupont" oninput="updateAvatar(this.value)"></div><div class="form-group"><label>Email</label><div class="relative"><input type="email" id="email" class="form-input pl-9" placeholder="jean@mail.com"><i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Téléphone</label><div class="relative"><input type="text" id="numero" class="form-input pl-9" placeholder="06 12 34 56 78"><i class="fa-solid fa-phone absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div><div class="form-group"><label>Source</label><select id="source" required class="form-input"><option class="dark:bg-slate-800">Marketing</option><option class="dark:bg-slate-800">Setting</option><option class="dark:bg-slate-800">Prise de rdv</option><option class="dark:bg-slate-800">Autre</option></select></div><div class="form-group col-span-2"><label>Replay / Lien Call</label><input type="url" id="enregistrementCall" class="form-input text-xs font-mono text-blue-400" placeholder="https://zoom.us/rec/..."></div><div class="hidden form-group"><label>Entrepreneur</label><input type="text" id="entrepreneur" class="form-input"></div></div>
+                    </div>
+                    <div class="pt-4 border-t dark:border-slate-800 border-slate-100"><label class="text-[10px] font-bold uppercase tracking-wider dark:text-slate-400 text-slate-500 mb-3 block">Statut du Deal</label><div class="hidden"><input id="close" type="checkbox"><input id="aFollowUp" type="checkbox"><input id="ghost" type="checkbox"><input id="nonClose" type="checkbox"><input id="cancelled" type="checkbox"><input id="unqualified" type="checkbox"><input id="rescheduled" type="checkbox"></div><div class="grid grid-cols-2 gap-2 mb-2"><div onclick="setDealStatus('aFollowUp')" id="btn-status-aFollowUp" class="status-pill hover:bg-indigo-500/10 hover:text-indigo-400 hover:border-indigo-500/50"><i class="fa-solid fa-bolt"></i> Relance</div><div onclick="setDealStatus('rescheduled')" id="btn-status-rescheduled" class="status-pill hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/50"><i class="fa-regular fa-calendar"></i> Reporté</div><div onclick="setDealStatus('ghost')" id="btn-status-ghost" class="status-pill hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/50"><i class="fa-solid fa-ghost"></i> Ghost</div><div onclick="setDealStatus('unqualified')" id="btn-status-unqualified" class="status-pill hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/50"><i class="fa-solid fa-user-slash"></i> Non Qualifié</div><div onclick="setDealStatus('nonClose')" id="btn-status-nonClose" class="status-pill hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50"><i class="fa-solid fa-xmark"></i> Perdu</div><div onclick="setDealStatus('cancelled')" id="btn-status-cancelled" class="status-pill hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50"><i class="fa-solid fa-ban"></i> Annulé</div></div><div onclick="setDealStatus('close')" id="btn-status-close" class="status-pill w-full mt-2 py-3 bg-gradient-to-r from-emerald-900/50 to-emerald-800/50 border border-emerald-500/30 text-emerald-400 hover:from-emerald-600 hover:to-emerald-500 hover:text-white transition-all shadow-lg hover:shadow-emerald-500/20"><span class="text-sm font-bold uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> Deal Closé</span></div></div>
+                    
+                    <div class="hidden mt-4 pt-4 border-t dark:border-slate-800 border-slate-100">
+                        <div class="form-group"><label class="text-indigo-400">📅 Planifier la Relance</label><input type="date" id="dateRelance" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div>
+                    </div>
+
+                    <!-- SECTION CLOSING (Prop 2 & 3 Integration) -->
+                    <div id="closing-details" class="hidden space-y-4 pt-4 border-t border-emerald-500/30 fade-in">
+                        <div class="p-4 rounded-xl dark:bg-emerald-500/5 border border-emerald-500/20 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-trophy text-6xl text-emerald-500"></i></div>
+                            <div class="grid grid-cols-2 gap-4 relative z-10">
+                                <div class="form-group col-span-2">
+                                    <label class="text-emerald-500">Offre Vendue</label>
+                                    <select id="formation" class="form-input !bg-slate-900 !border-emerald-500/30 text-emerald-400 font-bold" onchange="autoFillPrice()"><option class="dark:bg-slate-800" value="">Choisir...</option></select>
+                                </div>
+                                <div class="form-group col-span-2">
+                                    <label class="text-emerald-500">Option de Paiement</label>
+                                    <select id="typePaiement" class="form-input !bg-slate-900 !border-emerald-500/30 text-emerald-100" onchange="autoFillPrice()"><option class="dark:bg-slate-800" value="">Choisir...</option></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-emerald-500">Valeur Contrat (€)</label> <!-- PROPOSITION 3: Libellé Clair -->
+                                    <input type="number" id="prix" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="2000" oninput="calcRest()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-emerald-500">Encaissement (T0)</label> <!-- PROPOSITION 3: Libellé Clair -->
+                                    <input type="number" id="mensualite" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="500" oninput="calcRest()">
+                                </div>
+                                
+                                <!-- NEW FIELDS INFO ONLY -->
+                                <div class="col-span-2 grid grid-cols-3 gap-2 border-t border-emerald-500/20 pt-2 mt-1">
+                                    <div class="form-group"><label class="text-slate-500">Reste</label><input type="text" id="reste" disabled class="form-input !border-0 text-slate-400 font-mono text-xs" placeholder="-"></div>
+                                    <div class="form-group"><label class="text-emerald-500">Mens. à venir</label><input type="number" id="nbMens" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="#"></div>
+                                    <div class="form-group"><label class="text-emerald-500">Jour Prélvt</label><input type="number" id="jour" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono" placeholder="JJ"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2"><div class="form-group"><label>Notes & Commentaires</label><textarea id="newComment" rows="3" class="form-input resize-none bg-slate-50 dark:bg-slate-800/50" placeholder="Détails importants sur l'appel..."></textarea></div><div id="comment-history" class="mt-4 hidden p-3 dark:bg-black/40 bg-slate-100 rounded-lg border dark:border-slate-800 border-slate-200 text-xs dark:text-slate-300 text-slate-600 max-h-32 overflow-y-auto font-mono"></div></div>
+                </div>
+                <div class="p-6 border-t dark:border-slate-800 border-slate-200 flex justify-between gap-3 dark:bg-slate-900 bg-white sticky bottom-0 z-20">
+                    <button type="button" onclick="closeSlideOver()" class="px-5 py-3 rounded-xl text-sm font-bold dark:text-slate-500 dark:hover:text-slate-300 text-slate-400 hover:text-slate-600 transition-colors">Annuler</button>
+                    <button type="submit" id="submit-text" class="flex-1 px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-lg shadow-amber-900/20 transition-all flex justify-center items-center gap-2"><span>Enregistrer</span> <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- USER MODAL (NOUVEAU) -->
+    <div id="user-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 dark:bg-black/80 bg-slate-900/40 backdrop-blur-sm" onclick="closeUserModal()"></div>
+        <div class="relative dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-200 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden p-6">
+            <h3 class="text-lg font-bold dark:text-white text-slate-800 mb-6">Ajouter un Utilisateur</h3>
+            <form id="create-user-form" class="space-y-4">
+                <div class="form-group"><label>Identifiant (Login)</label><input type="text" id="new-user-login" class="form-input" required placeholder="ex: thomas"></div>
+                <div class="form-group"><label>Mot de passe</label><input type="text" id="new-user-pass" class="form-input" required placeholder="1234"></div>
+                <div class="form-group"><label>Nom Complet</label><input type="text" id="new-user-name" class="form-input" required placeholder="Thomas Durand"></div>
+                <div class="form-group"><label>Organisation</label><input type="text" id="new-user-org" class="form-input" required placeholder="Nom Client"></div>
+                <div class="form-group"><label>Rôle</label><select id="new-user-role" class="form-input"><option value="closer">Closer</option><option value="manager">Manager</option><option value="admin">Admin</option></select></div>
+                <!-- REMOVED REQUIRED ATTRIBUTE -->
+                <div class="form-group"><label>Sheet ID (Fichier) <span class="text-[9px] text-slate-500 font-normal">(Optionnel pour Admins)</span></label><input type="text" id="new-user-sheet" class="form-input" placeholder="ID Google Sheet..."></div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeUserModal()" class="px-4 py-2 text-slate-400 hover:text-white text-sm font-bold">Annuler</button>
+                    <button type="submit" id="btn-create-user" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"><div class="absolute inset-0 dark:bg-black/80 bg-slate-900/40 backdrop-blur-sm" onclick="document.getElementById('history-modal').classList.add('hidden')"></div><div class="relative dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"><div class="p-4 border-b dark:border-white/10 border-slate-100 font-bold dark:text-white text-slate-800">Historique Complet</div><div id="modal-history-content" class="p-6 text-sm dark:text-slate-300 text-slate-600 max-h-96 overflow-y-auto dark:bg-slate-800/50 bg-slate-50"></div><div class="p-4 border-t dark:border-white/10 border-slate-100 flex justify-end"><button onclick="document.getElementById('history-modal').classList.add('hidden')" class="text-sm font-bold dark:text-slate-400 text-slate-500 hover:text-slate-800 dark:hover:text-white">Fermer</button></div></div></div>
+    
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzTCbYR2H4jsGfrZt60oxhmwgf8D_wS8QSgO4GggLoECqsPP9LctDITbWgb6oBZQh/exec'; 
+        
+        window.switchView = function(viewId) { 
+            ['dashboard', 'stats', 'settings'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden')); 
+            document.getElementById(`view-${viewId}`).classList.remove('hidden'); 
+            const titles = { dashboard: 'Pipeline', stats: 'Business Intelligence', settings: 'Paramètres' }; 
+            document.getElementById('page-title').textContent = titles[viewId]; 
+            const act = document.getElementById('topbar-actions'); 
+            if(viewId === 'dashboard') act.classList.remove('hidden'); else act.classList.add('hidden'); 
+            
+            // ACTIVE BUTTON STATE FIX
+            ['dashboard', 'stats', 'settings'].forEach(v => {
+                const btn = document.getElementById('nav-' + v);
+                if(v === viewId) {
+                    btn.classList.add('active');
+                    btn.classList.remove('inactive');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                }
+            });
+
+            if(viewId === 'stats') updateReports(); 
+            if(viewId === 'settings') {
+                renderSettingsView(); 
+                // MODIF 1 : Permettre aussi au role 'admin' de charger les utilisateurs
+                if(currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'admin')) loadUsers(); 
+            }
+        };
+        
+        window.openSlideOver = function(isEdit = false) { 
+            if(!isEdit) resetForm(); 
+            document.getElementById('slide-over-container').classList.remove('hidden'); 
+            setTimeout(() => { document.getElementById('slide-over-panel').classList.remove('translate-x-full'); }, 10); 
+            if (!isEdit) { 
+                document.getElementById('slide-over-title').textContent = "Nouveau Deal"; 
+                document.getElementById('submit-text').innerHTML = "<span>Enregistrer</span> <i class='fa-solid fa-arrow-right'></i>"; 
+            } 
+        };
+
+        window.closeSlideOver = function() { document.getElementById('slide-over-panel').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('slide-over-container').classList.add('hidden'); }, 300); };
+        window.toggleExpand = function() { const panel = document.getElementById('slide-over-panel'); const icon = document.getElementById('expand-icon'); if (panel.classList.contains('max-w-lg')) { panel.classList.remove('max-w-lg'); panel.classList.add('max-w-5xl'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } else { panel.classList.add('max-w-5xl'); panel.classList.remove('max-w-lg'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); } };
+
+        const statuses = ['aFollowUp', 'rescheduled', 'ghost', 'unqualified', 'nonClose', 'cancelled', 'close'];
+        window.setDealStatus = function(activeId) {
+            statuses.forEach(id => {
+                const checkbox = document.getElementById(id); if(checkbox) checkbox.checked = false;
+                const btn = document.getElementById('btn-status-' + id);
+                if(btn) {
+                    btn.classList.remove('active', 'bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500', 'bg-blue-500/20', 'text-blue-400', 'border-blue-500', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500', 'bg-orange-500/20', 'text-orange-400', 'border-orange-500', 'bg-red-500/20', 'text-red-400', 'border-red-500', 'bg-slate-500/20', 'text-slate-300', 'border-slate-500');
+                    if(id === 'close') { btn.classList.remove('from-emerald-600', 'to-emerald-500', 'text-white', 'shadow-emerald-500/40'); btn.classList.add('text-emerald-400'); }
+                }
+            });
+            if(activeId) {
+                const checkbox = document.getElementById(activeId); if(checkbox) checkbox.checked = true;
+                const btn = document.getElementById('btn-status-' + activeId);
+                if(btn) {
+                    btn.classList.add('active');
+                    if(activeId === 'aFollowUp') btn.classList.add('bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500');
+                    if(activeId === 'rescheduled') btn.classList.add('bg-blue-500/20', 'text-blue-400', 'border-blue-500');
+                    if(activeId === 'ghost') btn.classList.add('bg-amber-500/20', 'text-amber-400', 'border-amber-500');
+                    if(activeId === 'unqualified') btn.classList.add('bg-orange-500/20', 'text-orange-400', 'border-orange-500');
+                    if(activeId === 'nonClose') btn.classList.add('bg-red-500/20', 'text-red-400', 'border-red-500');
+                    if(activeId === 'cancelled') btn.classList.add('bg-red-500/20', 'text-red-400', 'border-red-500'); // Modified to red style
+                    if(activeId === 'close') { btn.classList.remove('text-emerald-400'); btn.classList.add('from-emerald-600', 'to-emerald-500', 'text-white', 'shadow-emerald-500/40'); }
+                }
+            }
+            toggleClosing();
+        };
+
+        window.updateAvatar = function(name) { const avatar = document.getElementById('prospect-avatar'); if(!name) { avatar.textContent = "?"; return; } const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase(); avatar.textContent = initials; }
+        document.getElementById('btn-quick-copy').addEventListener('click', (e) => { e.preventDefault(); const email = document.getElementById('email').value; if(email) { navigator.clipboard.writeText(email); alert('Email copié !'); } });
+
+        document.getElementById('deal-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-text'); const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin'></i> Sauvegarde...";
+            const dealData = {
+                id: editingId, source: document.getElementById('source').value, nomPrenom: document.getElementById('nomPrenom').value, email: document.getElementById('email').value, numero: document.getElementById('numero').value, dateRDV: document.getElementById('dateRDV').value, entrepreneur: document.getElementById('entrepreneur').value,
+                close: document.getElementById('close').checked, aFollowUp: document.getElementById('aFollowUp').checked, ghost: document.getElementById('ghost').checked, nonClose: document.getElementById('nonClose').checked, cancelled: document.getElementById('cancelled').checked, unqualified: document.getElementById('unqualified').checked, rescheduled: document.getElementById('rescheduled').checked,
+                formation: document.getElementById('formation').value, prix: document.getElementById('prix').value, typePaiement: document.getElementById('typePaiement').value, mensualite: document.getElementById('mensualite').value,
+                // New Fields
+                reste: document.getElementById('reste').value, nbMens: document.getElementById('nbMens').value, jour: document.getElementById('jour').value,
+                enregistrementCall: document.getElementById('enregistrementCall').value, newCommentText: document.getElementById('newComment').value,
+                dateRelance: document.getElementById('dateRelance').value // AJOUT CHAMP RELANCE
+            };
+            try { const res = await fetchAppsScript(editingId ? 'UPDATE' : 'CREATE', { data: dealData }); if(res.success) { closeSlideOver(); loadDeals(); } else { alert("Erreur: " + res.message); } } catch(err) { alert("Erreur réseau: " + err.message); } finally { btn.disabled = false; btn.innerHTML = originalText; }
+        });
+
+        // LISTENER RECHERCHE
+        document.getElementById('search-bar').addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allDealsCache.filter(d => 
+                (d.nomPrenom && String(d.nomPrenom).toLowerCase().includes(term)) ||
+                (d.email && String(d.email).toLowerCase().includes(term)) ||
+                (d.numero && String(d.numero).toLowerCase().includes(term))
+            );
+            if(term.length > 0) { renderTable(filtered); } else { applyFilters(); }
+        });
+
+        // LISTENER CREATE USER (NOUVEAU) - UNIQUE
+        document.getElementById('create-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // MODIF 2 : Autoriser aussi les admins à créer des users
+            if(currentUser.role !== 'super_admin' && currentUser.role !== 'admin') return;
+            
+            const userData = {
+                username: document.getElementById('new-user-login').value,
+                password: document.getElementById('new-user-pass').value,
+                name: document.getElementById('new-user-name').value,
+                org: document.getElementById('new-user-org').value,
+                role: document.getElementById('new-user-role').value,
+                sheetId: document.getElementById('new-user-sheet').value
+            };
+
+            if(!confirm(`Créer l'utilisateur ${userData.username} ?`)) return;
+
+            // VALIDATION STRICTE : Closer OBLIGATOIRE, Admin OPTIONNEL
+            if (userData.role === 'closer' && (!userData.sheetId || userData.sheetId.trim() === "")) {
+                alert("⚠️ Erreur : Un Closer doit OBLIGATOIREMENT avoir un Google Sheet pour enregistrer ses ventes.");
+                return; // On arrête tout
+            }
+
+            // AJOUT LOADING STATE
+            const btn = document.getElementById('btn-create-user');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Création en cours...";
+
+            try {
+                const res = await fetchAppsScript('CREATE_USER', { userData: userData });
+                if(res.success) {
+                    alert('Utilisateur créé avec succès !');
+                    closeUserModal(); // FERME LA MODALE
+                    loadUsers(); // RECHARGE LA LISTE
+                } else {
+                    alert('Erreur: ' + res.message);
+                }
+            } catch(err) {
+                alert('Erreur réseau');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // --- GESTION UTILISATEURS (JS) ---
+        window.openUserModal = function() { document.getElementById('user-modal').classList.remove('hidden'); document.getElementById('create-user-form').reset(); }
+        window.closeUserModal = function() { document.getElementById('user-modal').classList.add('hidden'); }
+        
+        window.loadUsers = async function() {
+            try {
+                const res = await fetchAppsScript('GET_USERS');
+                if(res.success) {
+                    const tbody = document.getElementById('admin-users-body');
+                    tbody.innerHTML = '';
+                    res.users.forEach(u => {
+                        // MODIF 3 : Filtre de sécurité frontend
+                        // Si je ne suis pas super_admin, je ne vois que les gens de mon organisation
+                        if(currentUser.role !== 'super_admin' && u.org !== currentUser.org) return;
+
+                        tbody.innerHTML += `
+                        <tr class="hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <td class="p-4 font-bold dark:text-white text-slate-800">${u.username}</td>
+                            <td class="p-4 dark:text-slate-300 text-slate-600">${u.name}</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold bg-slate-200 dark:bg-slate-600 uppercase">${u.role}</span></td>
+                            <td class="p-4 dark:text-slate-300 text-slate-600">${u.org}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="deleteUser('${u.username}')" class="text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-2 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                }
+            } catch(e) { console.error("Erreur chargement users", e); }
+        }
+
+        window.deleteUser = async function(username) {
+            if(!confirm(`Supprimer définitivement l'utilisateur ${username} ?`)) return;
+            try {
+                const res = await fetchAppsScript('DELETE_USER', { username: username });
+                if(res.success) { loadUsers(); } else { alert("Erreur: " + res.message); }
+            } catch(e) { alert("Erreur réseau"); }
+        }
+
+        window.editDeal = function(id) { 
+            const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id; 
+            document.getElementById('nomPrenom').value = d.nomPrenom || ''; updateAvatar(d.nomPrenom); document.getElementById('source').value = d.source || ''; document.getElementById('entrepreneur').value = d.entrepreneur || ''; document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : ''; document.getElementById('email').value = d.email || ''; document.getElementById('numero').value = d.numero || ''; document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
+            setDealStatus(null); if(d.close) setDealStatus('close'); else if(d.aFollowUp) setDealStatus('aFollowUp'); else if(d.ghost) setDealStatus('ghost'); else if(d.nonClose) setDealStatus('nonClose'); else if(d.cancelled) setDealStatus('cancelled'); else if(d.unqualified) setDealStatus('unqualified'); else if(d.rescheduled) setDealStatus('rescheduled');
+            toggleClosing(); 
+            document.getElementById('formation').value = d.formation || ''; document.getElementById('prix').value = d.prix || ''; document.getElementById('typePaiement').value = d.typePaiement || ''; document.getElementById('mensualite').value = d.mensualite || ''; 
+            // Fill new fields
+            document.getElementById('reste').value = d.reste || ''; document.getElementById('nbMens').value = d.nbMens || ''; document.getElementById('jour').value = d.jour || '';
+            document.getElementById('dateRelance').value = d.dateRelance ? d.dateRelance.split('T')[0] : ''; // REMPLISSAGE RELANCE
+            
+            const hist = document.getElementById('comment-history'); hist.classList.remove('hidden'); if(d.commentaireHistory && d.commentaireHistory.trim() !== "") { hist.innerHTML = '<p class="text-[10px] font-bold uppercase text-slate-400 mb-2">📜 Historique des échanges :</p>' + d.commentaireHistory.replace(/\n/g, '<br>'); } else { hist.innerHTML = '<p class="text-[10px] font-bold uppercase text-slate-400 mb-2">📜 Historique des échanges :</p><p class="text-xs italic text-slate-500">Aucun historique disponible.</p>'; }
+            document.getElementById('newComment').value = ''; document.getElementById('slide-over-title').textContent = "Modifier le Deal"; document.getElementById('submit-text').innerHTML = "<span>Mettre à jour</span> <i class='fa-solid fa-rotate'></i>"; window.openSlideOver(true); 
+        };
+
+        // --- CORRECTION DE LA FONCTION DELETE AVEC LOGS ---
+        window.deleteDeal = async function(id) { 
+            if(!confirm("Supprimer ce deal définitivement ?")) return; 
+            console.log("Tentative de suppression pour ID:", id);
+            const res = await fetchAppsScript('DELETE', { data: { id: id } }); 
+            console.log("Résultat suppression:", res);
+            if(res.success) {
+                loadDeals(); 
+            } else { 
+                alert("Erreur suppression: " + (res.message || res.error || "Erreur inconnue")); 
+            } 
+        };
+
+        window.viewHistory = function(id) { const d = allDealsCache.find(x => x.id === id); document.getElementById('modal-history-content').innerHTML = (d.commentaireHistory || 'Aucune note').replace(/\n/g, '<br>'); document.getElementById('history-modal').classList.remove('hidden'); };
+
+        window.addSettingRow = function(type) { 
+            const defaultOrg = currentUser.org || ""; 
+            if(type === 'products') { if(!globalConfig.products) globalConfig.products=[]; globalConfig.products.push({org: defaultOrg, name: 'Nouveau Produit', price: 0}); } 
+            if(type === 'payments') { if(!globalConfig.payments) globalConfig.payments=[]; globalConfig.payments.push({org: defaultOrg, name: 'Nouveau Paiement'}); } 
+            if(type === 'rules') { if(!globalConfig.rules) globalConfig.rules=[]; globalConfig.rules.push({org: defaultOrg, product: '', payment: '', total: 0, cash: 0, nbMens: 0, jour: ''}); }
+            renderSettingsView(); 
+        };
+        window.removeSettingRow = function(type, idx) { if(type==='prod') globalConfig.products.splice(idx,1); if(type==='pay') globalConfig.payments.splice(idx,1); if(type==='rules') globalConfig.rules.splice(idx,1); renderSettingsView(); };
+        window.updateConfigLocal = function(type, idx, field, val) { if(type==='prod') globalConfig.products[idx][field]=val; if(type==='pay') globalConfig.payments[idx][field]=val; if(type==='rules') globalConfig.rules[idx][field]=val; };
+        window.saveSettings = async function() { const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.textContent = "Sauvegarde..."; try { const res = await fetchAppsScript('SAVE_CONFIG', { configData: globalConfig }); if(res.success) { alert("Configuration sauvegardée !"); populateFormDropdowns(); } } catch(e) { alert("Erreur: " + e.message); } btn.disabled = false; btn.textContent = "Sauvegarder la Configuration"; };
+
+        window.logout = function() { localStorage.clear(); location.reload(); };
+        
+        let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let globalConfig = { products: [], payments: [], rules: [] };
+        async function fetchConfig() { try { const res = await fetchAppsScript('GET_CONFIG'); if(res.success) globalConfig = res.config; } catch(e) {} }
+        
+        function initAuth() { 
+            const stored = localStorage.getItem('sellit_auth'); 
+            if (stored) { 
+                const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; 
+                fetchConfig().then(() => { populateFormDropdowns(); }); 
+                if(currentUser.role === 'super_admin') { 
+                    superAdminData = data.superAdminData || {}; 
+                    setupSuperAdminSelector(); 
+                    document.getElementById('nav-settings').classList.remove('hidden'); 
+                    document.getElementById('settings-admin-section').classList.remove('hidden'); // VISIBLE POUR SUPER ADMIN
+                } 
+                else if(currentUser.role === 'manager' || currentUser.role === 'admin' || currentUser.role === 'closer') { // MODIF V4.7 : Closer inclus
+                    availableSheets = data.teamSheets || []; 
+                    setupManagerSelector(availableSheets); 
+                    // Pour Managers/Admin on laisse le bouton settings
+                    if(currentUser.role !== 'closer') {
+                        document.getElementById('nav-settings').classList.remove('hidden');
+                        // MODIF 4 : Afficher aussi la section admin pour le rôle 'admin'
+                        if(currentUser.role === 'admin') {
+                            document.getElementById('settings-admin-section').classList.remove('hidden');
+                        }
+                    }
+                } 
+                else { if (!currentSheetId || currentSheetId === 'null') { 
+                    currentSheetId = currentUser.sheetId || currentUser.personalSheetId; 
+                    localStorage.setItem('crm_sheetId', currentSheetId); 
+                } } 
+                showApp(); loadDeals(); 
+            } else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); } 
+        }
+        function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
+        document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const result = JSON.parse(await response.text()); if (result.success) { 
+            let targetSheet = result.user.sheetId || result.user.personalSheetId; 
+            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin' || result.user.role === 'closer') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
+        
+        async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG' && action !== 'CREATE_USER' && action !== 'GET_USERS' && action !== 'DELETE_USER') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { console.error(error); return { success: false, error: error.message }; } }
+        async function loadDeals() { 
+            if(!currentSheetId || currentSheetId === 'null') {
+                alert("⚠️ ATTENTION : Aucun ID de fichier n'est associé à votre compte.\n\nVeuillez contacter l'administrateur pour qu'il ajoute votre Sheet ID dans l'onglet 'Utilisateurs' du fichier Master.");
+                document.getElementById('no-data-message').innerHTML = '<div class="text-center p-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i><p class="font-bold text-lg text-white">Erreur de Configuration</p><p class="text-xs text-slate-400">Votre compte n\'est lié à aucune Google Sheet.</p></div>';
+                document.getElementById('no-data-message').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('filter-month').value = 'all';
+            document.getElementById('filter-status').value = 'all';
+            document.getElementById('loading-message').classList.remove('hidden'); 
+            try { 
+                const res = await fetchAppsScript('READ'); 
+                if (res.success) { 
+                    allDealsCache = (res.deals || []).filter(d => d.nomPrenom && String(d.nomPrenom).trim() !== ""); 
+                    renderAll(); 
+                } else { 
+                    alert('Erreur chargement: ' + res.message); 
+                } 
+            } catch(e) {} 
+            document.getElementById('loading-message').classList.add('hidden'); 
+        }
+        
+        function populateFormDropdowns() {
+            const prodSelect = document.getElementById('formation'); const paySelect = document.getElementById('typePaiement'); const prodVal = prodSelect.value; const payVal = paySelect.value;
+            prodSelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Choisir...</option>'; 
+            paySelect.innerHTML = '<option class="dark:bg-slate-800" value="" disabled selected>Choisir...</option>';
+            const userOrg = (currentUser.org || "").trim().toLowerCase();
+            if(globalConfig.products) { globalConfig.products.forEach(p => { if((p.org||"").trim().toLowerCase() === userOrg || p.org==="") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name + (p.price ? ` (${p.price}€)` : ''); opt.dataset.price = p.price; prodSelect.appendChild(opt); } }); }
+            if(globalConfig.payments) { globalConfig.payments.forEach(p => { if((p.org||"").trim().toLowerCase() === userOrg || p.org==="") { const opt = document.createElement('option'); opt.className = 'dark:bg-slate-800'; opt.value = p.name; opt.textContent = p.name; paySelect.appendChild(opt); } }); }
+            if(prodVal) prodSelect.value = prodVal; if(payVal) paySelect.value = payVal;
+        }
+
+        // --- INTELLIGENCE DE PRIX (Prop 2) ---
+        window.calcRest = function() {
+            const t = safeFloat(document.getElementById('prix').value);
+            const c = safeFloat(document.getElementById('mensualite').value);
+            document.getElementById('reste').value = (t - c) > 0 ? (t - c) + ' €' : '-';
+        }
+
+        window.autoFillPrice = function() { 
+            const prodVal = document.getElementById('formation').value;
+            const payVal = document.getElementById('typePaiement').value;
+            if (!prodVal) return;
+            let foundRule = null;
+            if (payVal && globalConfig.rules) { foundRule = globalConfig.rules.find(r => r.product === prodVal && r.payment === payVal); }
+            if (foundRule) {
+                document.getElementById('prix').value = foundRule.total;
+                document.getElementById('mensualite').value = foundRule.cash;
+                document.getElementById('nbMens').value = foundRule.nbMens;
+                document.getElementById('jour').value = foundRule.jour || new Date().getDate(); 
+            } else {
+                const prodSelect = document.getElementById('formation');
+                const opt = prodSelect.options[prodSelect.selectedIndex];
+                if(opt && opt.dataset.price) {
+                    const defaultPrice = opt.dataset.price;
+                    if (!document.getElementById('prix').value || !payVal) {
+                        document.getElementById('prix').value = defaultPrice;
+                    }
+                }
+            }
+            calcRest();
+        }
+        
+        function renderSettingsView() { 
+            const prodBody = document.getElementById('settings-products-body'); const payBody = document.getElementById('settings-payments-body'); const rulesBody = document.getElementById('settings-rules-body');
+            prodBody.innerHTML = ''; payBody.innerHTML = ''; rulesBody.innerHTML = '';
+            (globalConfig.products || []).forEach((p, idx) => { prodBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('prod', ${idx}, 'org', this.value)"></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('prod', ${idx}, 'name', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${p.price}" onchange="updateConfigLocal('prod', ${idx}, 'price', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('prod', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+            (globalConfig.payments || []).forEach((p, idx) => { payBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${p.org}" onchange="updateConfigLocal('pay', ${idx}, 'org', this.value)"></td><td class="p-2"><input type="text" class="form-input" value="${p.name}" onchange="updateConfigLocal('pay', ${idx}, 'name', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('pay', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+            (globalConfig.rules || []).forEach((r, idx) => { rulesBody.innerHTML += `<tr><td class="p-2"><input type="text" class="form-input" value="${r.org}" onchange="updateConfigLocal('rules', ${idx}, 'org', this.value)"></td><td class="p-2"><input type="text" class="form-input font-bold text-emerald-400" value="${r.product}" placeholder="Nom Produit Exact..." onchange="updateConfigLocal('rules', ${idx}, 'product', this.value)"></td><td class="p-2"><input type="text" class="form-input text-indigo-400" value="${r.payment}" placeholder="Nom Paiement Exact..." onchange="updateConfigLocal('rules', ${idx}, 'payment', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${r.total}" onchange="updateConfigLocal('rules', ${idx}, 'total', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${r.cash}" onchange="updateConfigLocal('rules', ${idx}, 'cash', this.value)"></td><td class="p-2"><input type="number" class="form-input" value="${r.nbMens}" placeholder="#" onchange="updateConfigLocal('rules', ${idx}, 'nbMens', this.value)"></td><td class="p-2"><input type="text" class="form-input" value="${r.jour}" placeholder="J" onchange="updateConfigLocal('rules', ${idx}, 'jour', this.value)"></td><td class="p-2 text-right"><button onclick="removeSettingRow('rules', ${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+        }
+        
+        function setupSuperAdminSelector() { const orgContainer = document.getElementById('superadmin-selector-container'); const orgSel = document.getElementById('superadmin-org-selector'); const managerContainer = document.getElementById('manager-selector-container'); orgContainer.classList.remove('hidden'); managerContainer.classList.add('hidden'); orgSel.innerHTML = '<option value="">Choisir Client...</option>'; Object.keys(superAdminData).forEach(orgName => { const opt = document.createElement('option'); opt.value = orgName; opt.textContent = orgName; orgSel.appendChild(opt); }); orgSel.addEventListener('change', (e) => { const selectedOrg = e.target.value; if(selectedOrg && superAdminData[selectedOrg]) { currentUser.org = selectedOrg; document.getElementById('org-display').textContent = selectedOrg; availableSheets = superAdminData[selectedOrg]; setupManagerSelector(availableSheets); currentSheetId = 'ALL'; document.getElementById('manager-view-selector').value = 'ALL'; loadDeals(); } else { managerContainer.classList.add('hidden'); } }); }
+        function setupManagerSelector(sheets) { const sel = document.getElementById('manager-view-selector'); document.getElementById('manager-selector-container').classList.remove('hidden'); sel.innerHTML = '<option value="ALL">Vue Globale (Équipe)</option>'; sheets.forEach(s => { const opt = document.createElement('option'); opt.value = s.sheetId; opt.textContent = s.name; sel.appendChild(opt); }); sel.onchange = (e) => { currentSheetId = e.target.value; localStorage.setItem('crm_sheetId', currentSheetId); updateAddButtonVisibility(); loadDeals(); }; }
+        function updateAddButtonVisibility() { const btn = document.getElementById('btn-add-deal'); if (currentSheetId === 'ALL' || !currentSheetId) btn.classList.add('hidden'); else btn.classList.remove('hidden'); }
+        function renderAll() { populateFormDropdowns(); applyFilters(); if(document.getElementById('view-stats').classList.contains('hidden') === false) updateReports(); if(document.getElementById('view-settings').classList.contains('hidden') === false) renderSettingsView(); }
+        
+        // --- FILTERS ---
+        function applyFilters() { const m = document.getElementById('filter-month').value; const s = document.getElementById('filter-status').value; let list = allDealsCache; if (m !== 'all') list = list.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m)); if (s !== 'all') list = list.filter(d => checkStatus(d, s)); list.sort((a,b) => new Date(b.dateRDV||0) - new Date(a.dateRDV||0)); renderTable(list); updateKPIs(list); }
+        
+        // MISSING FUNCTIONS ADDED HERE
+        function checkMonthFilter(dateStr, filterValue) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            if (filterValue === 'current') {
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            }
+            // ADDED: Logic for 'week' filter
+            if (filterValue === 'week') {
+                return getWeekNumber(d) === getWeekNumber(now) && d.getFullYear() === now.getFullYear();
+            }
+            return true;
+        }
+
+        function checkStatus(deal, statusValue) {
+            if (statusValue === 'followup') return deal.aFollowUp;
+            if (statusValue === 'closed') return deal.close;
+            if (statusValue === 'cancelled') return deal.cancelled;
+            if (statusValue === 'unqualified') return deal.unqualified;
+            if (statusValue === 'rescheduled') return deal.rescheduled;
+            return true;
+        }
+
+        function renderTable(list) { const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); list.forEach(d => { const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; 
+        // ROLE CHECK NORMALIZED
+        const roleNettoye = (currentUser.role || "").trim().toLowerCase();
+        
+        // AJOUT INDICATEUR RELANCE (MASQUÉ POUR LE MOMENT)
+        let relanceTag = '';
+        /*
+        if(d.dateRelance) {
+            const rDate = new Date(d.dateRelance);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const isToday = rDate.getTime() === today.getTime();
+            if(isToday) relanceTag = `<div class="mt-1 text-[10px] text-indigo-400 font-bold"><i class="fa-solid fa-bell animate-pulse"></i> Relance ce jour</div>`;
+            else relanceTag = `<div class="mt-1 text-[10px] text-slate-500"><i class="fa-regular fa-bell"></i> ${formatDateFR(d.dateRelance)}</div>`;
+        }
+        */
+
+        const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}${relanceTag}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button>${roleNettoye !== 'closer' ? `<button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
+        function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
+        
+        // --- REPORTING (NOUVELLE VERSION INTELLIGENTE) ---
+        function updateReports() {
+            // Appliquer les filtres date (mois/semaine) AVANT de calculer les stats
+            const m = document.getElementById('filter-month').value;
+            let dataset = allDealsCache;
+            if (m !== 'all') dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
+
+            // Variables de calcul
+            let booked = dataset.length;
+            let ghosts = 0, cancelled = 0, rescheduled = 0, unqualified = 0, wins = 0, losses = 0;
+            let caSigned = 0, cashCollected = 0;
+            
+            // Leaderboard data
+            const teamStats = {};
+
+            dataset.forEach(d => {
+                // 1. Catégorisation
+                if(d.ghost) ghosts++;
+                else if(d.cancelled) cancelled++;
+                else if(d.rescheduled) rescheduled++;
+                else if(d.unqualified) unqualified++;
+                else if(d.close) wins++;
+                else if(d.nonClose) losses++;
+
+                // 2. Finance
+                const price = safeFloat(d.prix);
+                const cash = safeFloat(d.mensualite);
+                if(d.close) { caSigned += price; cashCollected += cash; }
+
+                // 3. Leaderboard Aggregation
+                // MODIFICATION V4.6 : Fallback sécurisé pour l'affichage en mode équipe.
+                // Si le nom du closer est manquant (backend) et qu'on est en vue 'ALL' (équipe), on affiche "Inconnu" plutôt que le nom du Super Admin.
+                const owner = d.ownerName || (currentSheetId === 'ALL' ? "Inconnu" : (currentUser.name || "Moi"));
+                const role = d.ownerRole || "Closer";
+                
+                if(!teamStats[owner]) teamStats[owner] = { booked: 0, shows: 0, wins: 0, ca: 0, role: role };
+                
+                teamStats[owner].booked++;
+                if(!d.ghost && !d.cancelled && !d.rescheduled) {
+                    teamStats[owner].shows++;
+                    if(d.close) {
+                        teamStats[owner].wins++;
+                        teamStats[owner].ca += price;
+                    }
+                }
+            });
+
+            // 4. Calculs Dérivés (Global)
+            const shows = booked - (ghosts + cancelled + rescheduled);
+            const showRate = booked ? Math.round((shows/booked)*100) : 0;
+            const closeRate = shows ? Math.round((wins/shows)*100) : 0;
+            const lossRate = shows ? Math.round((losses/shows)*100) : 0;
+            const nqRate = shows ? Math.round((unqualified/shows)*100) : 0; // NQ font partie des shows généralement
+            
+            const rps = shows ? Math.round(caSigned / shows) : 0;
+            const aov = wins ? Math.round(caSigned / wins) : 0;
+            const collectionRate = caSigned ? Math.round((cashCollected / caSigned)*100) : 0;
+
+            // 5. Affichage DOM
+            document.getElementById('stat-booked').textContent = booked;
+            document.getElementById('stat-shows').textContent = shows;
+            document.getElementById('stat-show-rate').textContent = `Show Rate: ${showRate}%`;
+            
+            document.getElementById('stat-ghost').textContent = ghosts;
+            document.getElementById('stat-ghost-rate').textContent = booked ? Math.round((ghosts/booked)*100) + '%' : '0%';
+            
+            document.getElementById('stat-rescheduled').textContent = rescheduled;
+            document.getElementById('stat-rescheduled-rate').textContent = booked ? Math.round((rescheduled/booked)*100) + '%' : '0%';
+
+            document.getElementById('stat-wins').textContent = wins;
+            document.getElementById('stat-close-rate').textContent = closeRate + '%';
+            document.getElementById('bar-close-rate').style.width = closeRate + '%';
+            
+            document.getElementById('stat-loss-rate').textContent = lossRate + '%';
+            document.getElementById('stat-loss-nb').textContent = losses + ' Deals';
+            
+            document.getElementById('stat-nq-rate').textContent = nqRate + '%';
+            document.getElementById('stat-nq-nb').textContent = unqualified + ' Deals';
+
+            document.getElementById('stat-ca').textContent = caSigned.toLocaleString('fr-FR') + ' €';
+            document.getElementById('stat-cash').textContent = cashCollected.toLocaleString('fr-FR') + ' €';
+            document.getElementById('stat-collection').textContent = `Encaissement: ${collectionRate}%`;
+            document.getElementById('stat-aov').textContent = aov.toLocaleString('fr-FR') + ' €';
+            document.getElementById('stat-rps').textContent = rps.toLocaleString('fr-FR') + ' €';
+
+            // 6. Rendu Leaderboard (Si Manager/Admin)
+            // if(currentUser.role !== 'closer') { // MODIF V4.7 : Suppression restriction
+                document.getElementById('stats-leaderboard-container').classList.remove('hidden');
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = '';
+                
+                // Trier par CA décroissant
+                Object.keys(teamStats).sort((a,b) => teamStats[b].ca - teamStats[a].ca).forEach(name => {
+                    const s = teamStats[name];
+                    const cr = s.shows ? Math.round((s.wins/s.shows)*100) : 0;
+                    const rpsUser = s.shows ? Math.round(s.ca/s.shows) : 0;
+                    
+                    // Style conditionnel pour le rôle
+                    const roleBadge = s.role.toLowerCase() === 'manager' || s.role.toLowerCase() === 'admin' 
+                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-600 uppercase tracking-wide">Manager</span>`
+                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wide">Closer</span>`;
+
+                    tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <td class="p-4 font-bold dark:text-white text-slate-800">${name}</td>
+                        <td class="p-4">${roleBadge}</td>
+                        <td class="p-4 text-center dark:text-slate-300 text-slate-600">${s.shows}</td>
+                        <td class="p-4 text-center dark:text-slate-300 text-slate-600 font-bold">${s.wins}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${cr > 30 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${cr}%</span>
+                        </td>
+                        <td class="p-4 text-right font-mono font-bold text-amber-500">${s.ca.toLocaleString()} €</td>
+                        <td class="p-4 text-right font-mono text-xs dark:text-slate-400 text-slate-500">${rpsUser.toLocaleString()} €</td>
+                    </tr>`;
+                });
+            // }
+        }
+
+        function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
+        document.getElementById('close').addEventListener('change', toggleClosing);
+        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); document.getElementById('prospect-avatar').textContent = "?"; setDealStatus(null); }
+        function formatDateFR(s) { if(!s) return '-'; const d = new Date(s); return d.toLocaleDateString('fr-FR'); }
+        document.getElementById('filter-month').addEventListener('change', () => { applyFilters(); if(!document.getElementById('view-stats').classList.contains('hidden')) updateReports(); }); 
+        document.getElementById('filter-status').addEventListener('change', applyFilters); 
+        document.getElementById('reset-filters').addEventListener('click', () => { document.getElementById('filter-month').value = 'current'; document.getElementById('filter-status').value = 'all'; applyFilters(); if(!document.getElementById('view-stats').classList.contains('hidden')) updateReports(); });
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        function safeFloat(val) { const s = String(val).replace(/[^0-9.-]/g, ''); const f = parseFloat(s); return isNaN(f) ? 0 : f; }
+
+        initAuth();
+    </script>
+</body>
+</html>
