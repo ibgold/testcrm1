@@ -427,7 +427,8 @@
             if(viewId === 'stats') updateReports(); 
             if(viewId === 'settings') {
                 renderSettingsView(); 
-                if(currentUser && currentUser.role === 'super_admin') loadUsers(); // CHARGER LES UTILISATEURS
+                // MODIF 1 : Permettre aussi au role 'admin' ET 'manager' de charger les utilisateurs
+                if(currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'admin' || currentUser.role === 'manager')) loadUsers(); 
             }
         };
         
@@ -504,7 +505,8 @@
         // LISTENER CREATE USER (NOUVEAU) - UNIQUE
         document.getElementById('create-user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(currentUser.role !== 'super_admin') return;
+            // MODIF 2 : Autoriser aussi les admins à créer des users
+            if(currentUser.role !== 'super_admin' && currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
             
             const userData = {
                 username: document.getElementById('new-user-login').value,
@@ -557,6 +559,14 @@
                     const tbody = document.getElementById('admin-users-body');
                     tbody.innerHTML = '';
                     res.users.forEach(u => {
+                        // MODIF 3 : Filtre de sécurité frontend - CORRIGÉ POUR ROBUSTESSE
+                        // Comparaison insensible à la casse et aux espaces
+                        const uOrg = (u.org || "").trim().toLowerCase();
+                        const myOrg = (currentUser.org || "").trim().toLowerCase();
+
+                        // Si je ne suis pas super_admin, je ne vois que les gens de mon organisation
+                        if(currentUser.role !== 'super_admin' && uOrg !== myOrg) return;
+
                         tbody.innerHTML += `
                         <tr class="hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                             <td class="p-4 font-bold dark:text-white text-slate-800">${u.username}</td>
@@ -636,11 +646,17 @@
                     document.getElementById('nav-settings').classList.remove('hidden'); 
                     document.getElementById('settings-admin-section').classList.remove('hidden'); // VISIBLE POUR SUPER ADMIN
                 } 
-                else if(currentUser.role === 'manager' || currentUser.role === 'admin' || currentUser.role === 'closer') { // MODIF V4.7 : Closer inclus
+                else if(currentUser.role === 'manager' || currentUser.role === 'admin') { // MODIF: Removed 'closer' to fix hidden button
                     availableSheets = data.teamSheets || []; 
                     setupManagerSelector(availableSheets); 
                     // Pour Managers/Admin on laisse le bouton settings
-                    if(currentUser.role !== 'closer') document.getElementById('nav-settings').classList.remove('hidden'); 
+                    if(currentUser.role !== 'closer') {
+                        document.getElementById('nav-settings').classList.remove('hidden');
+                        // MODIF 4 : Afficher aussi la section admin pour le rôle 'admin' ET 'manager'
+                        if(currentUser.role === 'admin' || currentUser.role === 'manager') {
+                            document.getElementById('settings-admin-section').classList.remove('hidden');
+                        }
+                    }
                 } 
                 else { if (!currentSheetId || currentSheetId === 'null') { 
                     currentSheetId = currentUser.sheetId || currentUser.personalSheetId; 
@@ -652,7 +668,8 @@
         function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
         document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const result = JSON.parse(await response.text()); if (result.success) { 
             let targetSheet = result.user.sheetId || result.user.personalSheetId; 
-            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin' || result.user.role === 'closer') targetSheet = 'ALL'; localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
+            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; // MODIF: Removed 'closer'
+            localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
         
         async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG' && action !== 'CREATE_USER' && action !== 'GET_USERS' && action !== 'DELETE_USER') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { console.error(error); return { success: false, error: error.message }; } }
         async function loadDeals() { 
