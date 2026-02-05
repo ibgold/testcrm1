@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900 dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical CRM</title>
+    <!-- Favicon Heart Pulse (Cyan-500) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%2306b6d4' d='M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { color-scheme: dark; }
+        body { font-family: 'Outfit', sans-serif; background: #0f172a; color: #cbd5e1; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; } .custom-scroll::-webkit-scrollbar-track { background: transparent; } .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .glass-header { border-bottom: 1px solid; transition: all 0.3s; background: #1e293b; border-color: #334155; }
+        .form-input { @apply block w-full rounded-lg border-0 ring-1 ring-inset py-2.5 px-3 text-sm shadow-sm transition-all outline-none bg-transparent; }
+        .form-input { @apply ring-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:bg-slate-800; }
+        .form-group label { @apply block text-[10px] font-bold uppercase tracking-wider mb-1.5 ml-1 transition-colors opacity-70; }
+        .slide-over { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Navigation Active State - CYAN THEME */
+        .nav-btn.active { @apply bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-inner; }
+        .nav-btn.inactive { @apply text-slate-500 hover:bg-slate-800 hover:text-white; }
+        
+    </style>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#0f172a', secondary: '#1e293b', accent: '#06b6d4' } } } }
+    </script>
+</head>
+<body class="h-full overflow-hidden font-medium dark">
+
+    <!-- APP -->
+    <div id="app-content" class="h-full flex w-full">
+        <!-- SIDEBAR -->
+        <div class="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 z-50 border-r transition-colors duration-300 bg-slate-900 border-slate-800 shadow-xl">
+            <div class="flex flex-col flex-1 min-h-0">
+                <div class="flex items-center h-20 px-6 border-b border-slate-800 gap-3">
+                    <div class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md"><i class="fa-solid fa-heart-pulse text-xs"></i></div>
+                    <span class="text-xl font-bold text-white tracking-wide">MEDICAL <span class="text-cyan-500">CRM</span></span>
+                </div>
+                <div class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                    <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn active w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"><i class="fa-solid fa-user-doctor mr-3 w-5 text-center"></i> Suivi Patients</button>
+                    <button onclick="switchView('stats')" id="nav-stats" class="nav-btn inactive w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"><i class="fa-solid fa-chart-activity mr-3 w-5 text-center"></i> Performance</button>
+                </div>
+                <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-bold text-white truncate w-24" id="user-display">Dr. User</p>
+                        <span class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">MEDICAL</span>
+                    </div>
+                    <button onclick="logout()" class="w-full py-2 text-xs text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg border border-red-500/10 transition-colors">Déconnexion</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="md:pl-72 flex flex-col flex-1 h-full overflow-hidden relative">
+            <div class="glass-header h-16 flex items-center justify-between px-8 sticky top-0 z-20 transition-colors duration-300">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-bold text-white" id="page-title">Suivi Patients</h2>
+                    <div id="loading-indicator" class="hidden px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-medium flex items-center"><svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Sync...</div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="openSlideOver()" class="group px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 rounded-lg shadow-lg hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-2"></i> Nouveau Patient</button>
+                </div>
+            </div>
+
+            <main class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scroll">
+                <!-- VIEW: DASHBOARD -->
+                <div id="view-dashboard" class="space-y-8 fade-in">
+                    <!-- KPIs MEDICAUX -->
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-4">
+                        <!-- KPI 1 : A APPELER (STOCK) -->
+                        <div class="bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-700 relative overflow-hidden group cursor-pointer hover:border-slate-500 transition-all" onclick="setQuickFilter('tocall')">
+                            <p class="text-xs font-bold text-slate-500 uppercase mb-1">À Appeler</p>
+                            <p class="text-3xl font-bold text-white" id="metric-tocall">0</p>
+                            <p class="text-[10px] text-slate-500 mt-1">Nouveaux</p>
+                        </div>
+
+                         <!-- KPI 1 BIS : ATTENTE PAIEMENT -->
+                         <div class="bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-700 relative overflow-hidden group cursor-pointer hover:border-indigo-500/50 transition-all" onclick="setQuickFilter('waiting')">
+                            <p class="text-xs font-bold text-indigo-400 uppercase mb-1">Attente Paiement</p>
+                            <p class="text-3xl font-bold text-indigo-400" id="metric-waiting">0</p>
+                            <p class="text-[10px] text-slate-500 mt-1">Lien envoyé</p>
+                        </div>
+                        
+                        <!-- KPI 2 : TELECONSULTATIONS (PIPELINE) -->
+                        <div class="bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-700 relative overflow-hidden group cursor-pointer hover:border-cyan-500/50 transition-all" onclick="setQuickFilter('consult')">
+                            <p class="text-xs font-bold text-cyan-400 uppercase mb-1">Consult. Payées</p>
+                            <p class="text-3xl font-bold text-cyan-400" id="metric-consults">0</p>
+                            <p class="text-[10px] text-slate-500 mt-1">À voir</p>
+                        </div>
+
+                        <!-- KPI 3 : SOINS SIGNÉS (CLOSING) -->
+                        <div class="bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-700 relative overflow-hidden group cursor-pointer hover:border-emerald-500/50 transition-all" onclick="setQuickFilter('signed')">
+                            <p class="text-xs font-bold text-emerald-400 uppercase mb-1">Soins Signés</p>
+                            <p class="text-3xl font-bold text-emerald-400" id="metric-signed">0</p>
+                            <p class="text-[10px] text-slate-500 mt-1">Validés</p>
+                        </div>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="bg-slate-800 shadow-sm rounded-2xl border border-slate-700 overflow-hidden">
+                        <div class="p-4 border-b border-slate-700 flex gap-3 overflow-x-auto items-center">
+                            <div class="relative mr-2">
+                                <input type="text" id="search-bar" placeholder="Patient..." class="form-input !w-60 !py-2 !pl-9 !text-xs font-medium">
+                                <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            </div>
+                            
+                            <!-- FILTRES RAPIDES MEDICAUX -->
+                            <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700 overflow-x-auto">
+                                <button onclick="setQuickFilter('all')" id="filter-btn-all" class="px-3 py-1.5 text-xs font-bold rounded text-white bg-slate-700 shadow-sm transition-all whitespace-nowrap">Tous</button>
+                                <button onclick="setQuickFilter('tocall')" id="filter-btn-tocall" class="px-3 py-1.5 text-xs font-bold rounded text-slate-400 hover:text-white transition-all flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-phone text-[10px]"></i> À Appeler</button>
+                                <button onclick="setQuickFilter('noanswer')" id="filter-btn-noanswer" class="px-3 py-1.5 text-xs font-bold rounded text-slate-400 hover:text-orange-400 transition-all flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-ghost text-[10px]"></i> Non Rép.</button>
+                                <button onclick="setQuickFilter('waiting')" id="filter-btn-waiting" class="px-3 py-1.5 text-xs font-bold rounded text-slate-400 hover:text-indigo-400 transition-all flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-clock text-[10px]"></i> Attente $</button>
+                                <button onclick="setQuickFilter('consult')" id="filter-btn-consult" class="px-3 py-1.5 text-xs font-bold rounded text-slate-400 hover:text-cyan-400 transition-all flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-video text-[10px]"></i> Consult.</button>
+                                <button onclick="setQuickFilter('signed')" id="filter-btn-signed" class="px-3 py-1.5 text-xs font-bold rounded text-slate-400 hover:text-emerald-400 transition-all flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-check text-[10px]"></i> Signés</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto min-h-[400px] relative">
+                            <div id="loading-message" class="hidden absolute inset-0 bg-slate-900/80 z-10 flex flex-col items-center justify-center backdrop-blur-sm"><div class="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-3"></div><p class="text-sm font-medium text-slate-400">Chargement des patients...</p></div>
+                            <div id="no-data-message" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-600 text-sm"><i class="fa-solid fa-user-slash text-4xl mb-3 opacity-50"></i>Aucun patient trouvé.</div>
+                            <table class="min-w-full divide-y divide-slate-700">
+                                <thead class="bg-slate-900/50"><tr><th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Patient</th><th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">RDV Consult</th><th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Dossier</th><th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">État</th><th class="px-6 py-4 text-right"></th></tr></thead>
+                                <tbody id="deals-table-body" class="divide-y divide-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: STATS -->
+                <div id="view-stats" class="hidden space-y-8 fade-in">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                            <h3 class="text-lg font-bold text-white mb-4">Volume Téléconsultations</h3>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-4xl font-bold text-cyan-400" id="stat-consult-count">0</span>
+                                <span class="text-sm text-slate-500 mb-1">RDV fixés</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="bar-consult" class="bg-cyan-500 h-full" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2 text-right">Sur total leads</p>
+                        </div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                            <h3 class="text-lg font-bold text-white mb-4">Conversion Soins</h3>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-4xl font-bold text-emerald-400" id="stat-sign-count">0</span>
+                                <span class="text-sm text-slate-500 mb-1">Dossiers signés</span>
+                            </div>
+                             <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="bar-sign" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2 text-right">Taux de transformation post-consult</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODERN SLIDE OVER (MEDICAL EDIT) -->
+    <div id="slide-over-container" class="hidden fixed inset-0 z-50 overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" onclick="closeSlideOver()"></div>
+        <div id="slide-over-panel" class="absolute inset-y-0 right-0 max-w-lg w-full bg-slate-900 shadow-2xl flex flex-col transform transition-transform translate-x-full border-l border-slate-800">
+            <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900 z-10">
+                <div class="flex items-center gap-4">
+                    <div id="prospect-avatar" class="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">?</div>
+                    <div><h2 class="text-xl font-bold text-white leading-tight" id="slide-over-title">Dossier Patient</h2></div>
+                </div>
+                <button onclick="closeSlideOver()" class="h-9 w-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="deal-form" class="flex-1 flex flex-col overflow-y-auto custom-scroll bg-slate-900 relative">
+                <div class="px-6 py-6 space-y-8">
+                    <!-- INFO PATIENT -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4"><div class="form-group col-span-2"><label>Nom du Patient</label><input type="text" id="nomPrenom" required class="form-input text-lg font-semibold" placeholder="Ex: Jean Dupont" oninput="updateAvatar(this.value)"></div><div class="form-group"><label>Email</label><div class="relative"><input type="email" id="email" class="form-input pl-9"><i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Téléphone</label><div class="relative"><input type="text" id="numero" class="form-input pl-9"><i class="fa-solid fa-phone absolute left-3 top-3 text-slate-500"></i></div></div>
+                        
+                        <!-- ETAPE 1 : TELECONSULTATION -->
+                        <div class="col-span-2 p-4 border border-cyan-500/30 bg-cyan-900/10 rounded-xl relative mt-2">
+                             <div class="absolute -top-3 left-3 px-2 bg-slate-900 text-[10px] font-bold text-cyan-400 uppercase">Étape 1 : Téléconsultation</div>
+                             <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group"><label class="text-cyan-300">Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:dark] border-cyan-500/30"></div>
+                                <div class="form-group"><label class="text-cyan-300">Statut Paiement Consult</label><select id="source" class="form-input border-cyan-500/30"><option value="">Non payé</option><option value="Payé">✅ Payé (CB/Lien)</option></select></div>
+                             </div>
+                        </div>
+
+                        <div class="form-group col-span-2"><label>Lien Dossier Médical / Replay</label><input type="url" id="enregistrementCall" class="form-input text-xs font-mono text-blue-400"></div>
+                    </div>
+                    
+                    <!-- ACTIONS RAPIDES (WORKFLOW) -->
+                    <div class="pt-4 border-t border-slate-800">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3 block">État du Dossier</label>
+                        
+                        <!-- Hidden checkboxes for backend logic -->
+                        <div class="hidden"><input id="close" type="checkbox"><input id="aFollowUp" type="checkbox"><input id="ghost" type="checkbox"><input id="nonClose" type="checkbox"><input id="cancelled" type="checkbox"><input id="unqualified" type="checkbox"><input id="rescheduled" type="checkbox"></div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <!-- NOUVEAU BOUTON : A APPELER (Reset flags) -->
+                            <button type="button" onclick="setMedicalStatus('tocall')" id="btn-med-tocall" class="p-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 text-xs font-bold flex flex-col items-center gap-1"><i class="fa-solid fa-phone"></i> À Appeler</button>
+                            
+                            <!-- NOUVEAU BOUTON : NON REPONSE (Ghost) -->
+                            <button type="button" onclick="setMedicalStatus('noanswer')" id="btn-med-noanswer" class="p-3 rounded-lg border border-orange-500/30 bg-orange-900/20 text-orange-400 hover:bg-orange-900/40 text-xs font-bold flex flex-col items-center gap-1"><i class="fa-solid fa-ghost"></i> Non Réponse</button>
+                            
+                            <!-- NOUVEAU BOUTON : ATTENTE PAIEMENT (Relance) -->
+                            <button type="button" onclick="setMedicalStatus('waiting')" id="btn-med-waiting" class="p-3 rounded-lg border border-indigo-500/30 bg-indigo-900/20 text-indigo-400 hover:bg-indigo-900/40 text-xs font-bold flex flex-col items-center gap-1"><i class="fa-solid fa-clock"></i> Attente Paiement</button>
+                            
+                            <!-- CONSULT BOOKEE (Rescheduled) -->
+                            <button type="button" onclick="setMedicalStatus('consult')" id="btn-med-consult" class="p-3 rounded-lg border border-cyan-500/30 bg-cyan-900/20 text-cyan-400 hover:bg-cyan-900/40 text-xs font-bold flex flex-col items-center gap-1"><i class="fa-solid fa-calendar-check"></i> Téléconsult. Bookée</button>
+                        </div>
+
+                        <!-- ETAPE 2 : CLOSING FINAL -->
+                        <div id="closing-section" class="p-4 rounded-xl bg-emerald-900/10 border border-emerald-500/20 relative opacity-50 transition-opacity">
+                            <div class="absolute -top-3 left-3 px-2 bg-slate-900 text-[10px] font-bold text-emerald-500 uppercase">Étape 2 : Soin Final</div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <button type="button" onclick="setMedicalStatus('signed')" id="btn-med-signed" class="w-full py-3 bg-slate-800 border border-emerald-500/30 text-emerald-400 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition-all">VALIDER LE SOIN (SIGNÉ)</button>
+                            </div>
+                            
+                            <div id="closing-details" class="hidden space-y-3">
+                                <div class="form-group"><label class="text-emerald-500">Type de Soin</label><select id="formation" class="form-input !bg-slate-900 !border-emerald-500/30 text-emerald-400 font-bold"><option class="bg-slate-800" value="">Choisir...</option></select></div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="form-group"><label class="text-emerald-500">Prix Total (€)</label><input type="number" id="prix" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono"></div>
+                                    <div class="form-group"><label class="text-emerald-500">Acompte (€)</label><input type="number" id="mensualite" class="form-input !bg-slate-900 !border-emerald-500/30 text-white font-mono"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center mt-4 gap-2">
+                             <button type="button" onclick="setMedicalStatus('lost')" class="text-[10px] text-red-400 hover:text-red-300 underline">Marquer comme Perdu / Refusé</button>
+                        </div>
+                    </div>
+
+                    <div class="pt-2"><div class="form-group"><label>Notes Médicales</label><textarea id="newComment" rows="3" class="form-input resize-none bg-slate-800/50" placeholder="Notes sur le patient..."></textarea></div><div id="comment-history" class="mt-4 hidden p-3 bg-black/40 rounded-lg border border-slate-800 text-xs text-slate-300 max-h-32 overflow-y-auto font-mono"></div></div>
+                </div>
+                <div class="p-6 border-t border-slate-800 flex justify-between gap-3 bg-slate-900 sticky bottom-0 z-20">
+                    <button type="button" onclick="closeSlideOver()" class="px-5 py-3 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-300 transition-colors">Annuler</button>
+                    <button type="submit" id="submit-text" class="flex-1 px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 shadow-lg shadow-cyan-900/20 transition-all flex justify-center items-center gap-2"><span>Sauvegarder</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzTCbYR2H4jsGfrZt60oxhmwgf8D_wS8QSgO4GggLoECqsPP9LctDITbWgb6oBZQh/exec'; 
+        let allDealsCache = []; let currentUser = null; let currentSheetId = localStorage.getItem('crm_sheetId'); let globalConfig = { products: [], payments: [], rules: [] };
+        let activeFilter = 'tocall'; // Default view for her
+
+        // --- AUTH & INIT ---
+        async function initApp() {
+            const stored = localStorage.getItem('sellit_auth');
+            if(!stored) { 
+                document.body.innerHTML = `<div class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center text-white p-4 text-center z-[100]"><div class="h-20 w-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-700 shadow-xl"><i class="fa-solid fa-user-lock text-3xl text-slate-400"></i></div><h1 class="text-2xl font-bold mb-2 text-white">Accès Restreint</h1><p class="text-slate-400 mb-8 max-w-md">Veuillez vous connecter via le portail principal.</p><a href="index.html" class="px-6 py-3 bg-cyan-600 text-white rounded-xl font-bold">Retour à l'accueil</a></div>`;
+                return;
+            }
+
+            const data = JSON.parse(stored); currentUser = data.user;
+            document.getElementById('user-display').textContent = currentUser.name || 'Docteur';
+            if(data.config) globalConfig = data.config;
+            populateDropdowns();
+            loadPatients();
+        }
+
+        // --- CORE FUNCTIONS ---
+        async function fetchAppsScript(action, data = {}) { data.targetSheetId = currentSheetId; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { return { success: false, error: error.message }; } }
+
+        async function loadPatients() {
+            document.getElementById('loading-message').classList.remove('hidden');
+            const res = await fetchAppsScript('READ');
+            if(res.success) {
+                allDealsCache = res.deals || [];
+                renderMedicalView();
+            }
+            document.getElementById('loading-message').classList.add('hidden');
+        }
+
+        // --- MEDICAL LOGIC ---
+        function setQuickFilter(filter) {
+            activeFilter = filter;
+            // Update buttons
+            ['all', 'tocall', 'noanswer', 'waiting', 'consult', 'signed'].forEach(f => {
+                const btn = document.getElementById('filter-btn-'+f);
+                if(btn) {
+                    if(f === filter) {
+                        btn.classList.remove('text-slate-400', 'bg-transparent');
+                        btn.classList.add('bg-slate-700', 'text-white', 'shadow-sm');
+                        if(f === 'consult') btn.classList.add('text-cyan-300');
+                        if(f === 'signed') btn.classList.add('text-emerald-300');
+                        if(f === 'waiting') btn.classList.add('text-indigo-300');
+                        if(f === 'noanswer') btn.classList.add('text-orange-300');
+                    } else {
+                        btn.classList.add('text-slate-400', 'bg-transparent');
+                        btn.classList.remove('bg-slate-700', 'text-white', 'shadow-sm', 'text-cyan-300', 'text-emerald-300', 'text-indigo-300', 'text-orange-300');
+                    }
+                }
+            });
+            renderMedicalView();
+        }
+
+        function renderMedicalView() {
+            const term = document.getElementById('search-bar').value.toLowerCase();
+            const tbody = document.getElementById('deals-table-body');
+            tbody.innerHTML = '';
+            
+            let filtered = allDealsCache.filter(d => (d.nomPrenom||'').toLowerCase().includes(term));
+            
+            // Stats Count
+            let toCallCount = 0;
+            let waitingCount = 0;
+            let consultCount = 0;
+            let signedCount = 0;
+
+            filtered.forEach(d => {
+                // LOGIC STATUS INTERPRETATION
+                let status = 'tocall';
+                if(d.close) status = 'signed';
+                else if(d.nonClose || d.cancelled || d.unqualified) status = 'lost';
+                else if(d.aFollowUp) status = 'waiting'; // MAPPING : Relance = Attente Paiement
+                else if(d.ghost) status = 'noanswer'; // MAPPING : Ghost = Non Réponse
+                else if(d.dateRDV && new Date(d.dateRDV) > new Date().setHours(0,0,0,0)) status = 'consult'; 
+                else if(d.dateRDV) status = 'consult_done';
+                else status = 'tocall'; // Pas de flag = À Appeler
+
+                if(status === 'tocall') toCallCount++;
+                if(status === 'waiting') waitingCount++;
+                if(status === 'consult' || status === 'consult_done') consultCount++;
+                if(status === 'signed') signedCount++;
+
+                // FILTERING DISPLAY
+                if(activeFilter !== 'all') {
+                    if(activeFilter === 'tocall' && status !== 'tocall') return;
+                    if(activeFilter === 'noanswer' && status !== 'noanswer') return;
+                    if(activeFilter === 'waiting' && status !== 'waiting') return;
+                    if(activeFilter === 'consult' && (status !== 'consult' && status !== 'consult_done')) return;
+                    if(activeFilter === 'signed' && status !== 'signed') return;
+                }
+                
+                // RENDER ROW
+                let badge = '';
+                if(status === 'signed') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">SOIN SIGNÉ</span>';
+                else if(status === 'consult') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">CONSULT PRÉVUE</span>';
+                else if(status === 'consult_done') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">CONSULT FAITE</span>';
+                else if(status === 'waiting') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"><i class="fa-solid fa-clock"></i> ATTENTE $</span>';
+                else if(status === 'noanswer') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30"><i class="fa-solid fa-ghost"></i> NON RÉP.</span>';
+                else if(status === 'tocall') badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-slate-700 text-slate-300">À APPELER</span>';
+                else badge = '<span class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 text-slate-600">TERMINÉ</span>';
+
+                const dateStr = d.dateRDV ? new Date(d.dateRDV).toLocaleDateString('fr-FR') : '-';
+                
+                const row = `<tr class="hover:bg-slate-800/50 transition-colors border-b border-slate-800 last:border-none cursor-pointer" onclick="editDeal('${d.id}')">
+                    <td class="px-6 py-4"><div class="font-bold text-white">${d.nomPrenom}</div><div class="text-[10px] text-slate-500">${d.numero || ''}</div></td>
+                    <td class="px-6 py-4 font-mono text-cyan-300 text-sm">${dateStr}</td>
+                    <td class="px-6 py-4 text-xs text-slate-400">${d.formation || '-'}</td>
+                    <td class="px-6 py-4">${badge}</td>
+                    <td class="px-6 py-4 text-right"><i class="fa-solid fa-chevron-right text-slate-600"></i></td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            // Update Metrics
+            document.getElementById('metric-tocall').textContent = toCallCount;
+            document.getElementById('metric-waiting').textContent = waitingCount;
+            document.getElementById('metric-consults').textContent = consultCount;
+            document.getElementById('metric-signed').textContent = signedCount;
+            document.getElementById('stat-consult-count').textContent = consultCount;
+            document.getElementById('stat-sign-count').textContent = signedCount;
+            
+            // Bars
+            const totalActive = toCallCount + waitingCount + consultCount + signedCount;
+            if(totalActive > 0) {
+                 document.getElementById('bar-consult').style.width = ((consultCount / totalActive) * 100) + '%';
+                 document.getElementById('bar-sign').style.width = ((signedCount / totalActive) * 100) + '%';
+            }
+            
+            document.getElementById('no-data-message').classList.toggle('hidden', tbody.innerHTML !== '');
+        }
+
+        // --- FORM & EDIT LOGIC ---
+        function openSlideOver(isEdit=false) {
+            document.getElementById('slide-over-container').classList.remove('hidden');
+            setTimeout(() => document.getElementById('slide-over-panel').classList.remove('translate-x-full'), 10);
+            if(!isEdit) resetForm();
+        }
+        function closeSlideOver() { document.getElementById('slide-over-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('slide-over-container').classList.add('hidden'), 300); }
+        
+        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; setMedicalStatus('tocall'); document.getElementById('comment-history').classList.add('hidden'); }
+
+        window.setMedicalStatus = function(status) {
+            // Reset visual state of buttons
+            const btns = ['tocall', 'noanswer', 'waiting', 'consult'];
+            btns.forEach(b => {
+                const el = document.getElementById('btn-med-' + b);
+                // Reset to default style
+                if(b==='tocall') el.className = "p-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 text-xs font-bold flex flex-col items-center gap-1";
+                if(b==='noanswer') el.className = "p-3 rounded-lg border border-orange-500/30 bg-orange-900/20 text-orange-400 hover:bg-orange-900/40 text-xs font-bold flex flex-col items-center gap-1";
+                if(b==='waiting') el.className = "p-3 rounded-lg border border-indigo-500/30 bg-indigo-900/20 text-indigo-400 hover:bg-indigo-900/40 text-xs font-bold flex flex-col items-center gap-1";
+                if(b==='consult') el.className = "p-3 rounded-lg border border-cyan-500/30 bg-cyan-900/20 text-cyan-400 hover:bg-cyan-900/40 text-xs font-bold flex flex-col items-center gap-1";
+            });
+
+            document.getElementById('btn-med-signed').className = "w-full py-3 bg-slate-800 border border-emerald-500/30 text-emerald-400 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition-all";
+            document.getElementById('closing-section').classList.add('opacity-50');
+            document.getElementById('closing-details').classList.add('hidden');
+
+            // Uncheck all backend flags
+            ['close', 'aFollowUp', 'ghost', 'nonClose', 'cancelled', 'unqualified', 'rescheduled'].forEach(id => document.getElementById(id).checked = false);
+
+            if(status === 'tocall') {
+                // No flag for "To Call"
+                document.getElementById('btn-med-tocall').className = "p-3 rounded-lg border border-slate-400 bg-slate-700 text-white text-xs font-bold flex flex-col items-center gap-1 shadow-lg";
+            }
+            else if(status === 'noanswer') {
+                document.getElementById('ghost').checked = true; // MAPPING GHOST
+                document.getElementById('btn-med-noanswer').className = "p-3 rounded-lg border border-orange-500 bg-orange-500/20 text-orange-400 text-xs font-bold flex flex-col items-center gap-1 shadow-lg shadow-orange-500/10";
+            }
+            else if(status === 'waiting') {
+                document.getElementById('aFollowUp').checked = true; // MAPPING RELANCE
+                document.getElementById('btn-med-waiting').className = "p-3 rounded-lg border border-indigo-500 bg-indigo-500/20 text-indigo-400 text-xs font-bold flex flex-col items-center gap-1 shadow-lg shadow-indigo-500/10";
+            }
+            else if(status === 'consult') {
+                document.getElementById('rescheduled').checked = true; // Used as Active Flag
+                document.getElementById('btn-med-consult').className = "p-3 rounded-lg border border-cyan-500 bg-cyan-500/20 text-cyan-400 text-xs font-bold flex flex-col items-center gap-1 shadow-lg shadow-cyan-500/10";
+            }
+            else if(status === 'signed') {
+                document.getElementById('close').checked = true;
+                document.getElementById('btn-med-signed').className = "w-full py-3 bg-emerald-600 text-white border border-emerald-500 rounded-lg font-bold shadow-lg shadow-emerald-500/30";
+                document.getElementById('closing-section').classList.remove('opacity-50');
+                document.getElementById('closing-details').classList.remove('hidden');
+            }
+            else if(status === 'lost') {
+                document.getElementById('nonClose').checked = true;
+            }
+        }
+
+        window.editDeal = function(id) {
+            const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id;
+            document.getElementById('nomPrenom').value = d.nomPrenom || ''; 
+            updateAvatar(d.nomPrenom); 
+            document.getElementById('email').value = d.email || ''; 
+            document.getElementById('numero').value = d.numero || ''; 
+            document.getElementById('source').value = d.source || ''; 
+            document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : '';
+            document.getElementById('enregistrementCall').value = d.enregistrementCall || '';
+            document.getElementById('formation').value = d.formation || ''; 
+            document.getElementById('prix').value = d.prix || ''; 
+            document.getElementById('mensualite').value = d.mensualite || '';
+
+            // Determine status for UI
+            if(d.close) setMedicalStatus('signed');
+            else if(d.nonClose || d.cancelled || d.unqualified) setMedicalStatus('lost');
+            else if(d.aFollowUp) setMedicalStatus('waiting'); // Waiting Payment
+            else if(d.ghost) setMedicalStatus('noanswer'); // No Answer
+            else if(d.dateRDV && new Date(d.dateRDV) > new Date().setHours(0,0,0,0)) setMedicalStatus('consult');
+            else setMedicalStatus('tocall');
+
+            // History
+            const hist = document.getElementById('comment-history'); 
+            hist.classList.remove('hidden'); 
+            hist.innerHTML = d.commentaireHistory ? d.commentaireHistory.replace(/\n/g, '<br>') : '<i class="opacity-50">Aucune note.</i>';
+            document.getElementById('newComment').value = ''; 
+
+            openSlideOver(true);
+        }
+
+        // --- SUBMIT ---
+        document.getElementById('deal-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-text'); const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin'></i>";
+            
+            const dealData = {
+                id: editingId, 
+                nomPrenom: document.getElementById('nomPrenom').value, 
+                email: document.getElementById('email').value, 
+                numero: document.getElementById('numero').value, 
+                dateRDV: document.getElementById('dateRDV').value, 
+                source: document.getElementById('source').value, 
+                formation: document.getElementById('formation').value, 
+                prix: document.getElementById('prix').value, 
+                mensualite: document.getElementById('mensualite').value,
+                enregistrementCall: document.getElementById('enregistrementCall').value, 
+                newCommentText: document.getElementById('newComment').value,
+                
+                // Status Mapping
+                close: document.getElementById('close').checked, 
+                aFollowUp: document.getElementById('aFollowUp').checked, 
+                ghost: document.getElementById('ghost').checked, 
+                nonClose: document.getElementById('nonClose').checked, 
+                cancelled: document.getElementById('cancelled').checked, 
+                unqualified: document.getElementById('unqualified').checked, 
+                rescheduled: document.getElementById('rescheduled').checked
+            };
+            
+            try { 
+                const res = await fetchAppsScript(editingId ? 'UPDATE' : 'CREATE', { data: dealData }); 
+                if(res.success) { closeSlideOver(); loadPatients(); } else { alert("Erreur: " + res.message); } 
+            } catch(err) { alert("Erreur réseau"); } 
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
+        });
+
+        // Search Listener
+        document.getElementById('search-bar').addEventListener('keyup', renderMedicalView);
+        function updateAvatar(name) { const a = document.getElementById('prospect-avatar'); a.textContent = name ? name.substring(0,2).toUpperCase() : "?"; }
+        function populateDropdowns() {
+            const s = document.getElementById('formation');
+            s.innerHTML = '<option class="bg-slate-800" value="">Choisir...</option>';
+            if(globalConfig.products) globalConfig.products.forEach(p => { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; s.appendChild(o); });
+        }
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+        initApp();
+    </script>
+</body>
+</html>
