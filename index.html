@@ -638,7 +638,17 @@
         function initAuth() { 
             const stored = localStorage.getItem('sellit_auth'); 
             if (stored) { 
-                const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; 
+                const data = JSON.parse(stored);
+                
+                // --- ROUTEUR INTELLIGENT ---
+                // Si c'est Cécilia, on l'envoie sur son interface dédiée
+                if (data.user.username.toLowerCase() === 'cecilia' || data.user.role === 'medical') {
+                    window.location.href = 'medical.html';
+                    return; // On charge pas le reste
+                }
+                // ---------------------------
+                
+                currentUser = data.user; if(data.config) globalConfig = data.config; 
                 fetchConfig().then(() => { populateFormDropdowns(); }); 
                 if(currentUser.role === 'super_admin') { 
                     superAdminData = data.superAdminData || {}; 
