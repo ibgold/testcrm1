@@ -140,6 +140,17 @@
 
                 <!-- VIEW: STATS (REFONTE TOTALE) -->
                 <div id="view-stats" class="hidden space-y-8 fade-in">
+                    
+                    <!-- NEW FILTER HEADER -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold dark:text-white text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-amber-500"></i> Période d'analyse</h3>
+                        <select id="stats-filter-date" onchange="updateReports()" class="form-input !w-auto !py-2 !pl-3 !pr-8 font-bold cursor-pointer">
+                            <option value="all">Tout l'historique</option>
+                            <option value="current">Ce mois</option>
+                            <option value="week">Cette semaine</option>
+                        </select>
+                    </div>
+
                     <!-- 1. LE CARBURANT (VOLUME) -->
                     <div>
                         <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-gas-pump"></i> Volume</h3>
@@ -327,16 +338,7 @@
             <form id="deal-form" class="flex-1 flex flex-col overflow-y-auto custom-scroll dark:bg-slate-900 bg-white relative">
                 <div class="px-6 py-6 space-y-8">
                     <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-group col-span-2"><label>Nom du Prospect</label><input type="text" id="nomPrenom" required class="form-input text-lg font-semibold" placeholder="Ex: Jean Dupont" oninput="updateAvatar(this.value)"></div>
-                            <div class="form-group"><label>Email</label><div class="relative"><input type="email" id="email" class="form-input pl-9" placeholder="jean@mail.com"><i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-500"></i></div></div>
-                            <div class="form-group"><label>Téléphone</label><div class="relative"><input type="text" id="numero" class="form-input pl-9" placeholder="06 12 34 56 78"><i class="fa-solid fa-phone absolute left-3 top-3 text-slate-500"></i></div></div>
-                            <div class="form-group"><label>Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div>
-                            <div class="form-group"><label>Source</label><select id="source" required class="form-input"><option class="dark:bg-slate-800">Marketing</option><option class="dark:bg-slate-800">Setting</option><option class="dark:bg-slate-800">Prise de rdv</option><option class="dark:bg-slate-800">Autre</option></select></div>
-                            <div class="form-group"><label class="text-emerald-500 font-bold">Montant / Paiement (€)</label><input type="number" id="quick-money" class="form-input border-emerald-500/30 text-emerald-400 font-bold" placeholder="0.00" oninput="syncQuickMoney(this.value)"></div>
-                            <div class="form-group"><label>Replay / Lien Call</label><input type="url" id="enregistrementCall" class="form-input text-xs font-mono text-blue-400" placeholder="https://zoom.us/rec/..."></div>
-                            <div class="hidden form-group"><label>Entrepreneur</label><input type="text" id="entrepreneur" class="form-input"></div>
-                        </div>
+                        <div class="grid grid-cols-2 gap-4"><div class="form-group col-span-2"><label>Nom du Prospect</label><input type="text" id="nomPrenom" required class="form-input text-lg font-semibold" placeholder="Ex: Jean Dupont" oninput="updateAvatar(this.value)"></div><div class="form-group"><label>Email</label><div class="relative"><input type="email" id="email" class="form-input pl-9" placeholder="jean@mail.com"><i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Téléphone</label><div class="relative"><input type="text" id="numero" class="form-input pl-9" placeholder="06 12 34 56 78"><i class="fa-solid fa-phone absolute left-3 top-3 text-slate-500"></i></div></div><div class="form-group"><label>Date RDV</label><input type="date" id="dateRDV" class="form-input [color-scheme:light] dark:[color-scheme:dark]"></div><div class="form-group"><label>Source</label><select id="source" required class="form-input"><option class="dark:bg-slate-800">Marketing</option><option class="dark:bg-slate-800">Setting</option><option class="dark:bg-slate-800">Prise de rdv</option><option class="dark:bg-slate-800">Autre</option></select></div><div class="form-group col-span-2"><label>Replay / Lien Call</label><input type="url" id="enregistrementCall" class="form-input text-xs font-mono text-blue-400" placeholder="https://zoom.us/rec/..."></div><div class="hidden form-group"><label>Entrepreneur</label><input type="text" id="entrepreneur" class="form-input"></div></div>
                     </div>
                     <div class="pt-4 border-t dark:border-slate-800 border-slate-100"><label class="text-[10px] font-bold uppercase tracking-wider dark:text-slate-400 text-slate-500 mb-3 block">Statut du Deal</label><div class="hidden"><input id="close" type="checkbox"><input id="aFollowUp" type="checkbox"><input id="ghost" type="checkbox"><input id="nonClose" type="checkbox"><input id="cancelled" type="checkbox"><input id="unqualified" type="checkbox"><input id="rescheduled" type="checkbox"></div><div class="grid grid-cols-2 gap-2 mb-2"><div onclick="setDealStatus('aFollowUp')" id="btn-status-aFollowUp" class="status-pill hover:bg-indigo-500/10 hover:text-indigo-400 hover:border-indigo-500/50"><i class="fa-solid fa-bolt"></i> Relance</div><div onclick="setDealStatus('rescheduled')" id="btn-status-rescheduled" class="status-pill hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/50"><i class="fa-regular fa-calendar"></i> Reporté</div><div onclick="setDealStatus('ghost')" id="btn-status-ghost" class="status-pill hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/50"><i class="fa-solid fa-ghost"></i> Ghost</div><div onclick="setDealStatus('unqualified')" id="btn-status-unqualified" class="status-pill hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/50"><i class="fa-solid fa-user-slash"></i> Non Qualifié</div><div onclick="setDealStatus('nonClose')" id="btn-status-nonClose" class="status-pill hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50"><i class="fa-solid fa-xmark"></i> Perdu</div><div onclick="setDealStatus('cancelled')" id="btn-status-cancelled" class="status-pill hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50"><i class="fa-solid fa-ban"></i> Annulé</div></div><div onclick="setDealStatus('close')" id="btn-status-close" class="status-pill w-full mt-2 py-3 bg-gradient-to-r from-emerald-900/50 to-emerald-800/50 border border-emerald-500/30 text-emerald-400 hover:from-emerald-600 hover:to-emerald-500 hover:text-white transition-all shadow-lg hover:shadow-emerald-500/20"><span class="text-sm font-bold uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> Deal Closé</span></div></div>
                     
@@ -605,10 +607,6 @@
             setDealStatus(null); if(d.close) setDealStatus('close'); else if(d.aFollowUp) setDealStatus('aFollowUp'); else if(d.ghost) setDealStatus('ghost'); else if(d.nonClose) setDealStatus('nonClose'); else if(d.cancelled) setDealStatus('cancelled'); else if(d.unqualified) setDealStatus('unqualified'); else if(d.rescheduled) setDealStatus('rescheduled');
             toggleClosing(); 
             document.getElementById('formation').value = d.formation || ''; document.getElementById('prix').value = d.prix || ''; document.getElementById('typePaiement').value = d.typePaiement || ''; document.getElementById('mensualite').value = d.mensualite || ''; 
-            
-            // --- NOUVEAU : REMPLIR LE CHAMP RAPIDE ---
-            document.getElementById('quick-money').value = d.mensualite || d.prix || '';
-
             // Fill new fields
             document.getElementById('reste').value = d.reste || ''; document.getElementById('nbMens').value = d.nbMens || ''; document.getElementById('jour').value = d.jour || '';
             document.getElementById('dateRelance').value = d.dateRelance ? d.dateRelance.split('T')[0] : ''; // REMPLISSAGE RELANCE
@@ -651,7 +649,19 @@
         function initAuth() { 
             const stored = localStorage.getItem('sellit_auth'); 
             if (stored) { 
-                const data = JSON.parse(stored); currentUser = data.user; if(data.config) globalConfig = data.config; 
+                const data = JSON.parse(stored);
+                
+                // --- ROUTEUR INTELLIGENT ---
+                // Si c'est Cécilia, on l'envoie sur son interface dédiée
+                // CORRECTION : Le backend renvoie parfois 'user' au lieu de 'username'
+                const pseudo = data.user.username || data.user.user || "";
+                if (pseudo.toLowerCase() === 'cecilia' || data.user.role === 'medical') {
+                    window.location.href = 'medical.html';
+                    return; // On charge pas le reste
+                }
+                // ---------------------------
+                
+                currentUser = data.user; if(data.config) globalConfig = data.config; 
                 fetchConfig().then(() => { populateFormDropdowns(); }); 
                 if(currentUser.role === 'super_admin') { 
                     superAdminData = data.superAdminData || {}; 
@@ -747,20 +757,6 @@
             }
             calcRest();
         }
-
-        // --- NOUVEAU : SYNC CHAMP RAPIDE ---
-        window.syncQuickMoney = function(val) {
-            document.getElementById('prix').value = val;
-            document.getElementById('mensualite').value = val;
-            calcRest(); 
-            
-            // Si montant > 0, on considère que c'est VENDU (Closé)
-            if(val && parseFloat(val) > 0) {
-                if(!document.getElementById('close').checked) {
-                    setDealStatus('close');
-                }
-            }
-        }
         
         function renderSettingsView() { 
             const prodBody = document.getElementById('settings-products-body'); const payBody = document.getElementById('settings-payments-body'); const rulesBody = document.getElementById('settings-rules-body');
@@ -823,7 +819,7 @@
         // --- REPORTING (NOUVELLE VERSION INTELLIGENTE) ---
         function updateReports() {
             // Appliquer les filtres date (mois/semaine) AVANT de calculer les stats
-            const m = document.getElementById('filter-month').value;
+            const m = document.getElementById('stats-filter-date').value;
             let dataset = allDealsCache;
             if (m !== 'all') dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
 
@@ -940,7 +936,7 @@
 
         function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
         document.getElementById('close').addEventListener('change', toggleClosing);
-        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); document.getElementById('prospect-avatar').textContent = "?"; setDealStatus(null); document.getElementById('quick-money').value = ''; }
+        function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); document.getElementById('prospect-avatar').textContent = "?"; setDealStatus(null); }
         function formatDateFR(s) { if(!s) return '-'; const d = new Date(s); return d.toLocaleDateString('fr-FR'); }
         document.getElementById('filter-month').addEventListener('change', () => { applyFilters(); if(!document.getElementById('view-stats').classList.contains('hidden')) updateReports(); }); 
         document.getElementById('filter-status').addEventListener('change', applyFilters); 
