@@ -145,20 +145,24 @@
                     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                         <h3 class="text-lg font-bold dark:text-white text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-amber-500"></i> Période d'analyse</h3>
                         
-                        <div class="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <select id="stats-filter-date" onchange="toggleCustomDate()" class="form-input !w-auto !py-1.5 !pl-3 !pr-8 font-bold cursor-pointer !border-0 !bg-transparent !shadow-none focus:!ring-0">
-                                <option value="all">Tout l'historique</option>
-                                <option value="current" selected>Ce mois</option>
-                                <option value="week">Cette semaine</option>
-                                <option value="custom">📅 Période Personnalisée</option>
-                            </select>
-                            
-                            <!-- CUSTOM DATE INPUTS (HIDDEN BY DEFAULT) -->
-                            <div id="custom-date-container" class="hidden flex items-center gap-2 pl-2 border-l border-slate-300 dark:border-slate-600 animate-fadeIn">
-                                <input type="date" id="stats-date-start" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
-                                <span class="text-slate-400 text-xs font-bold">au</span>
-                                <input type="date" id="stats-date-end" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <select id="stats-filter-date" onchange="toggleCustomDate()" class="form-input !w-auto !py-1.5 !pl-3 !pr-8 font-bold cursor-pointer !border-0 !bg-transparent !shadow-none focus:!ring-0">
+                                    <option value="all">Tout l'historique</option>
+                                    <option value="current" selected>Ce mois</option>
+                                    <option value="week">Cette semaine</option>
+                                    <option value="custom">📅 Période Personnalisée</option>
+                                </select>
+                                
+                                <!-- CUSTOM DATE INPUTS (HIDDEN BY DEFAULT) -->
+                                <div id="custom-date-container" class="hidden flex items-center gap-2 pl-2 border-l border-slate-300 dark:border-slate-600 animate-fadeIn">
+                                    <input type="date" id="stats-date-start" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
+                                    <span class="text-slate-400 text-xs font-bold">au</span>
+                                    <input type="date" id="stats-date-end" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
+                                </div>
                             </div>
+                            <!-- REPORT BUTTON (SUPER ADMIN ONLY) -->
+                            <button id="btn-generate-report" onclick="openReportModal()" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"><i class="fa-solid fa-file-lines"></i> Rapport Data</button>
                         </div>
                     </div>
 
@@ -423,6 +427,28 @@
     <!-- History Modal -->
     <div id="history-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"><div class="absolute inset-0 dark:bg-black/80 bg-slate-900/40 backdrop-blur-sm" onclick="document.getElementById('history-modal').classList.add('hidden')"></div><div class="relative dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"><div class="p-4 border-b dark:border-white/10 border-slate-100 font-bold dark:text-white text-slate-800">Historique Complet</div><div id="modal-history-content" class="p-6 text-sm dark:text-slate-300 text-slate-600 max-h-96 overflow-y-auto dark:bg-slate-800/50 bg-slate-50"></div><div class="p-4 border-t dark:border-white/10 border-slate-100 flex justify-end"><button onclick="document.getElementById('history-modal').classList.add('hidden')" class="text-sm font-bold dark:text-slate-400 text-slate-500 hover:text-slate-800 dark:hover:text-white">Fermer</button></div></div></div>
     
+    <!-- DATA REPORT MODAL -->
+    <div id="report-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div class="absolute inset-0 dark:bg-black/90 bg-slate-900/60 backdrop-blur-md" onclick="document.getElementById('report-modal').classList.add('hidden')"></div>
+        <div class="relative dark:bg-slate-900 bg-white border dark:border-slate-700 border-slate-200 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b dark:border-slate-800 border-slate-100 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <div>
+                    <h3 class="text-lg font-bold dark:text-white text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-500"></i> Rapport Data</h3>
+                    <p class="text-xs text-slate-500 font-mono mt-1" id="report-date-range">Période...</p>
+                </div>
+                <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="h-8 w-8 rounded-full flex items-center justify-center dark:text-slate-400 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="flex-1 p-0 overflow-y-auto custom-scroll bg-slate-50 dark:bg-slate-900">
+                <textarea id="report-textarea" class="w-full h-full min-h-[400px] p-6 bg-transparent border-0 resize-none font-mono text-xs leading-relaxed dark:text-emerald-400 text-slate-800 focus:ring-0" readonly></textarea>
+            </div>
+            
+            <div class="p-4 border-t dark:border-slate-800 border-slate-100 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                <button onclick="copyReport()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"><i class="fa-regular fa-copy"></i> Copier les Données</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzTCbYR2H4jsGfrZt60oxhmwgf8D_wS8QSgO4GggLoECqsPP9LctDITbWgb6oBZQh/exec'; 
         
@@ -448,6 +474,12 @@
 
             if(viewId === 'stats') {
                 updateReports();
+                // BUTTON VISIBILITY FOR SUPER ADMIN
+                if(currentUser && currentUser.role === 'super_admin') {
+                    document.getElementById('btn-generate-report').classList.remove('hidden');
+                } else {
+                    document.getElementById('btn-generate-report').classList.add('hidden');
+                }
             }
             if(viewId === 'settings') {
                 renderSettingsView(); 
@@ -849,6 +881,139 @@
             }
             updateReports();
         }
+
+        // --- NOUVELLE FONCTION: GENERATEUR DE RAPPORT DATA-PURE (SUPER ADMIN) ---
+        window.openReportModal = function() {
+            if(currentUser.role !== 'super_admin') return;
+            
+            // 1. Définir le dataset filtré (identique à updateReports)
+            const m = document.getElementById('stats-filter-date').value;
+            let dataset = allDealsCache;
+            let rangeText = "";
+
+            if (m === 'custom') {
+                const sStr = document.getElementById('stats-date-start').value;
+                const eStr = document.getElementById('stats-date-end').value;
+                if(sStr && eStr) {
+                    const start = new Date(sStr); start.setHours(0,0,0,0);
+                    const end = new Date(eStr); end.setHours(23,59,59,999);
+                    rangeText = `Du ${formatDateFR(sStr)} au ${formatDateFR(eStr)}`;
+                    dataset = dataset.filter(d => {
+                        if(!d.dateRDV) return false;
+                        const dateR = new Date(d.dateRDV);
+                        return dateR >= start && dateR <= end;
+                    });
+                } else rangeText = "Période personnalisée incomplète";
+            } else if (m !== 'all') {
+                rangeText = m === 'current' ? "Mois en cours" : "Semaine en cours";
+                dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
+            } else {
+                rangeText = "Tout l'historique";
+            }
+
+            document.getElementById('report-date-range').textContent = rangeText;
+
+            // 2. Calculs Exhaustifs
+            let totalLeads = dataset.length;
+            let totalShows = 0;
+            let totalWins = 0;
+            let caSigned = 0;
+            let cashCollected = 0;
+            
+            // Stats par Closer
+            let closerStats = {};
+            
+            // --- AJOUT COMMENTAIRES ---
+            const commentsByType = { wins: [], losses: [], followups: [] };
+
+            dataset.forEach(d => {
+                const owner = d.ownerName || "Inconnu";
+                if(!closerStats[owner]) closerStats[owner] = { booked: 0, shows: 0, wins: 0, ca: 0, cash: 0 };
+                
+                closerStats[owner].booked++;
+                
+                // Show ? (Pas Ghost/Annulé/Reporté)
+                if(!d.ghost && !d.cancelled && !d.rescheduled) {
+                    totalShows++;
+                    closerStats[owner].shows++;
+                    
+                    if(d.close) {
+                        totalWins++;
+                        closerStats[owner].wins++;
+                        const p = safeFloat(d.prix);
+                        const c = safeFloat(d.mensualite);
+                        caSigned += p;
+                        cashCollected += c;
+                        closerStats[owner].ca += p;
+                        closerStats[owner].cash += c;
+                    }
+                }
+
+                // --- LOGIQUE COMMENTAIRES ---
+                if (d.commentaireHistory && d.commentaireHistory.trim() !== "") {
+                    // Extract latest comment (first part before double newline)
+                    const latestNote = d.commentaireHistory.split('\n\n')[0].replace(/\n/g, ' '); 
+                    const entry = `• ${d.nomPrenom} (${owner}) : "${latestNote}"`;
+                    
+                    if(d.close) commentsByType.wins.push(entry);
+                    else if(d.nonClose) commentsByType.losses.push(entry);
+                    else if(d.aFollowUp) commentsByType.followups.push(entry);
+                }
+            });
+
+            // 3. Construction du Texte
+            let report = `RAPPORT DATA PURE - ${rangeText}\n`;
+            report += `Généré le ${new Date().toLocaleString('fr-FR')}\n`;
+            report += `------------------------------------------------\n`;
+            report += `📊 GLOBAL\n`;
+            report += `• CA Signé       : ${caSigned.toLocaleString()} €\n`;
+            report += `• Cash T0        : ${cashCollected.toLocaleString()} €\n`;
+            report += `• Reste à venir  : ${(caSigned - cashCollected).toLocaleString()} €\n\n`;
+            
+            report += `📉 ENTONNOIR\n`;
+            report += `• Total RDV      : ${totalLeads}\n`;
+            report += `• Total Shows    : ${totalShows} (Show Rate: ${totalLeads ? Math.round(totalShows/totalLeads*100) : 0}%)\n`;
+            report += `• Total Ventes   : ${totalWins} (Close Rate: ${totalShows ? Math.round(totalWins/totalShows*100) : 0}%)\n`;
+            report += `• Panier Moyen   : ${totalWins ? Math.round(caSigned/totalWins).toLocaleString() : 0} €\n`;
+            report += `------------------------------------------------\n`;
+            report += `👥 DÉTAIL PAR CLOSER (DATA EXHAUSTIVE)\n\n`;
+
+            // Trier par CA décroissant
+            Object.keys(closerStats).sort((a,b) => closerStats[b].ca - closerStats[a].ca).forEach(name => {
+                const s = closerStats[name];
+                const cr = s.shows ? Math.round((s.wins/s.shows)*100) : 0;
+                
+                report += `[${name.toUpperCase()}]\n`;
+                report += `  - Shows: ${s.shows} | Ventes: ${s.wins} | CR: ${cr}%\n`;
+                report += `  - CA: ${s.ca.toLocaleString()} € | Cash: ${s.cash.toLocaleString()} €\n\n`;
+            });
+
+            // 4. Section Commentaires
+            report += `------------------------------------------------\n`;
+            report += `📝 EXTRAIT COMMENTAIRES (Derniers échanges)\n\n`;
+            
+            if(commentsByType.wins.length > 0) {
+                report += `🏆 CLOSINGS (Dernière note)\n${commentsByType.wins.join('\n')}\n\n`;
+            }
+            if(commentsByType.losses.length > 0) {
+                report += `❌ PERTES (Dernière note)\n${commentsByType.losses.join('\n')}\n\n`;
+            }
+             if(commentsByType.followups.length > 0) {
+                report += `⚡ RELANCES (Dernière note)\n${commentsByType.followups.join('\n')}\n\n`;
+            }
+
+            // 5. Affichage
+            document.getElementById('report-textarea').value = report;
+            document.getElementById('report-modal').classList.remove('hidden');
+        };
+
+        window.copyReport = function() {
+            const txt = document.getElementById('report-textarea');
+            txt.select();
+            document.execCommand('copy'); // Fallback plus compatible iframe
+            // Ou navigator.clipboard.writeText(txt.value) si supporté
+            alert("Rapport copié dans le presse-papier !");
+        };
 
         function updateReports() {
             // Appliquer les filtres date (mois/semaine/custom) AVANT de calculer les stats
