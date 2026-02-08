@@ -141,14 +141,25 @@
                 <!-- VIEW: STATS (REFONTE TOTALE) -->
                 <div id="view-stats" class="hidden space-y-8 fade-in">
                     
-                    <!-- NEW FILTER HEADER -->
-                    <div class="flex justify-between items-center mb-6">
+                    <!-- NEW FILTER HEADER WITH CUSTOM DATE -->
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                         <h3 class="text-lg font-bold dark:text-white text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-amber-500"></i> Période d'analyse</h3>
-                        <select id="stats-filter-date" onchange="updateReports()" class="form-input !w-auto !py-2 !pl-3 !pr-8 font-bold cursor-pointer">
-                            <option value="all">Tout l'historique</option>
-                            <option value="current">Ce mois</option>
-                            <option value="week">Cette semaine</option>
-                        </select>
+                        
+                        <div class="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <select id="stats-filter-date" onchange="toggleCustomDate()" class="form-input !w-auto !py-1.5 !pl-3 !pr-8 font-bold cursor-pointer !border-0 !bg-transparent !shadow-none focus:!ring-0">
+                                <option value="all">Tout l'historique</option>
+                                <option value="current" selected>Ce mois</option>
+                                <option value="week">Cette semaine</option>
+                                <option value="custom">📅 Période Personnalisée</option>
+                            </select>
+                            
+                            <!-- CUSTOM DATE INPUTS (HIDDEN BY DEFAULT) -->
+                            <div id="custom-date-container" class="hidden flex items-center gap-2 pl-2 border-l border-slate-300 dark:border-slate-600 animate-fadeIn">
+                                <input type="date" id="stats-date-start" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
+                                <span class="text-slate-400 text-xs font-bold">au</span>
+                                <input type="date" id="stats-date-end" onchange="updateReports()" class="form-input !py-1 !text-xs !w-auto [color-scheme:light] dark:[color-scheme:dark]">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 1. LE CARBURANT (VOLUME) -->
@@ -435,7 +446,9 @@
                 }
             });
 
-            if(viewId === 'stats') updateReports(); 
+            if(viewId === 'stats') {
+                updateReports();
+            }
             if(viewId === 'settings') {
                 renderSettingsView(); 
                 // MODIF 1 : Permettre aussi au role 'admin' ET 'manager' de charger les utilisateurs
@@ -817,11 +830,46 @@
         function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
         
         // --- REPORTING (NOUVELLE VERSION INTELLIGENTE) ---
+        // AJOUT: Gestion Custom Date UI
+        window.toggleCustomDate = function() {
+            const sel = document.getElementById('stats-filter-date');
+            const container = document.getElementById('custom-date-container');
+            if(sel.value === 'custom') {
+                container.classList.remove('hidden');
+                // Pré-remplir avec le mois en cours si vide
+                if(!document.getElementById('stats-date-start').value) {
+                    const now = new Date();
+                    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    document.getElementById('stats-date-start').value = firstDay.toISOString().split('T')[0];
+                    document.getElementById('stats-date-end').value = lastDay.toISOString().split('T')[0];
+                }
+            } else {
+                container.classList.add('hidden');
+            }
+            updateReports();
+        }
+
         function updateReports() {
-            // Appliquer les filtres date (mois/semaine) AVANT de calculer les stats
+            // Appliquer les filtres date (mois/semaine/custom) AVANT de calculer les stats
             const m = document.getElementById('stats-filter-date').value;
             let dataset = allDealsCache;
-            if (m !== 'all') dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
+
+            if (m === 'custom') {
+                const sStr = document.getElementById('stats-date-start').value;
+                const eStr = document.getElementById('stats-date-end').value;
+                if(sStr && eStr) {
+                    const start = new Date(sStr); start.setHours(0,0,0,0);
+                    const end = new Date(eStr); end.setHours(23,59,59,999);
+                    dataset = dataset.filter(d => {
+                        if(!d.dateRDV) return false;
+                        const dateR = new Date(d.dateRDV);
+                        return dateR >= start && dateR <= end;
+                    });
+                }
+            } else if (m !== 'all') {
+                dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
+            }
 
             // Variables de calcul
             let booked = dataset.length;
