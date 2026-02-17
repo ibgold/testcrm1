@@ -483,7 +483,6 @@
             }
             if(viewId === 'settings') {
                 renderSettingsView(); 
-                // MODIF 1 : Permettre aussi au role 'admin' ET 'manager' de charger les utilisateurs
                 if(currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'admin' || currentUser.role === 'manager')) loadUsers(); 
             }
         };
@@ -561,7 +560,6 @@
         // LISTENER CREATE USER (NOUVEAU) - UNIQUE
         document.getElementById('create-user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // MODIF 2 : Autoriser aussi les admins à créer des users
             if(currentUser.role !== 'super_admin' && currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
             
             const userData = {
@@ -575,13 +573,11 @@
 
             if(!confirm(`Créer l'utilisateur ${userData.username} ?`)) return;
 
-            // VALIDATION STRICTE : Closer OBLIGATOIRE, Admin OPTIONNEL
             if (userData.role === 'closer' && (!userData.sheetId || userData.sheetId.trim() === "")) {
                 alert("⚠️ Erreur : Un Closer doit OBLIGATOIREMENT avoir un Google Sheet pour enregistrer ses ventes.");
                 return; // On arrête tout
             }
 
-            // AJOUT LOADING STATE
             const btn = document.getElementById('btn-create-user');
             const originalText = btn.textContent;
             btn.disabled = true;
@@ -615,12 +611,8 @@
                     const tbody = document.getElementById('admin-users-body');
                     tbody.innerHTML = '';
                     res.users.forEach(u => {
-                        // MODIF 3 : Filtre de sécurité frontend - CORRIGÉ POUR ROBUSTESSE
-                        // Comparaison insensible à la casse et aux espaces
                         const uOrg = (u.org || "").trim().toLowerCase();
                         const myOrg = (currentUser.org || "").trim().toLowerCase();
-
-                        // Si je ne suis pas super_admin, je ne vois que les gens de mon organisation
                         if(currentUser.role !== 'super_admin' && uOrg !== myOrg) return;
 
                         tbody.innerHTML += `
@@ -648,7 +640,12 @@
 
         window.editDeal = function(id) { 
             const d = allDealsCache.find(x => x.id === id); if(!d) return; editingId = id; 
-            document.getElementById('nomPrenom').value = d.nomPrenom || ''; updateAvatar(d.nomPrenom); document.getElementById('source').value = d.source || ''; document.getElementById('entrepreneur').value = d.entrepreneur || ''; document.getElementById('dateRDV').value = d.dateRDV ? d.dateRDV.split('T')[0] : ''; document.getElementById('email').value = d.email || ''; document.getElementById('numero').value = d.numero || ''; document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
+            document.getElementById('nomPrenom').value = d.nomPrenom || ''; updateAvatar(d.nomPrenom); document.getElementById('source').value = d.source || ''; document.getElementById('entrepreneur').value = d.entrepreneur || ''; 
+            
+            // TIMEZONE FIX: On prend la chaîne brute YYYY-MM-DD
+            document.getElementById('dateRDV').value = d.dateRDV || ''; 
+            
+            document.getElementById('email').value = d.email || ''; document.getElementById('numero').value = d.numero || ''; document.getElementById('enregistrementCall').value = d.enregistrementCall || ''; 
             setDealStatus(null); if(d.close) setDealStatus('close'); else if(d.aFollowUp) setDealStatus('aFollowUp'); else if(d.ghost) setDealStatus('ghost'); else if(d.nonClose) setDealStatus('nonClose'); else if(d.cancelled) setDealStatus('cancelled'); else if(d.unqualified) setDealStatus('unqualified'); else if(d.rescheduled) setDealStatus('rescheduled');
             toggleClosing(); 
             document.getElementById('formation').value = d.formation || ''; document.getElementById('prix').value = d.prix || ''; document.getElementById('typePaiement').value = d.typePaiement || ''; document.getElementById('mensualite').value = d.mensualite || ''; 
@@ -660,12 +657,9 @@
             document.getElementById('newComment').value = ''; document.getElementById('slide-over-title').textContent = "Modifier le Deal"; document.getElementById('submit-text').innerHTML = "<span>Mettre à jour</span> <i class='fa-solid fa-rotate'></i>"; window.openSlideOver(true); 
         };
 
-        // --- CORRECTION DE LA FONCTION DELETE AVEC LOGS ---
         window.deleteDeal = async function(id) { 
             if(!confirm("Supprimer ce deal définitivement ?")) return; 
-            console.log("Tentative de suppression pour ID:", id);
             const res = await fetchAppsScript('DELETE', { data: { id: id } }); 
-            console.log("Résultat suppression:", res);
             if(res.success) {
                 loadDeals(); 
             } else { 
@@ -697,14 +691,11 @@
                 const data = JSON.parse(stored);
                 
                 // --- ROUTEUR INTELLIGENT ---
-                // Si c'est Cécilia, on l'envoie sur son interface dédiée
-                // CORRECTION : Le backend renvoie parfois 'user' au lieu de 'username'
                 const pseudo = data.user.username || data.user.user || "";
                 if (pseudo.toLowerCase() === 'cecilia' || data.user.role === 'medical') {
                     window.location.href = 'medical.html';
-                    return; // On charge pas le reste
+                    return; 
                 }
-                // ---------------------------
                 
                 currentUser = data.user; if(data.config) globalConfig = data.config; 
                 fetchConfig().then(() => { populateFormDropdowns(); }); 
@@ -712,15 +703,13 @@
                     superAdminData = data.superAdminData || {}; 
                     setupSuperAdminSelector(); 
                     document.getElementById('nav-settings').classList.remove('hidden'); 
-                    document.getElementById('settings-admin-section').classList.remove('hidden'); // VISIBLE POUR SUPER ADMIN
+                    document.getElementById('settings-admin-section').classList.remove('hidden'); 
                 } 
-                else if(currentUser.role === 'manager' || currentUser.role === 'admin') { // MODIF: Removed 'closer' to fix hidden button
+                else if(currentUser.role === 'manager' || currentUser.role === 'admin') { 
                     availableSheets = data.teamSheets || []; 
                     setupManagerSelector(availableSheets); 
-                    // Pour Managers/Admin on laisse le bouton settings
                     if(currentUser.role !== 'closer') {
                         document.getElementById('nav-settings').classList.remove('hidden');
-                        // MODIF 4 : Afficher aussi la section admin pour le rôle 'admin' ET 'manager'
                         if(currentUser.role === 'admin' || currentUser.role === 'manager') {
                             document.getElementById('settings-admin-section').classList.remove('hidden');
                         }
@@ -736,14 +725,13 @@
         function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('user-display').textContent = currentUser.name; document.getElementById('role-display').textContent = currentUser.role.toUpperCase(); document.getElementById('org-display').textContent = currentUser.org; updateAddButtonVisibility(); }
         document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn'); const err = document.getElementById('login-error'); btn.disabled = true; btn.textContent = "Connexion..."; err.classList.add('hidden'); try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'LOGIN', username: u, password: p }) }); const result = JSON.parse(await response.text()); if (result.success) { 
             let targetSheet = result.user.sheetId || result.user.personalSheetId; 
-            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; // MODIF: Removed 'closer'
+            if(result.user.role === 'super_admin' || result.user.role === 'manager' || result.user.role === 'admin') targetSheet = 'ALL'; 
             localStorage.setItem('crm_sheetId', targetSheet); localStorage.setItem('crm_user', result.user.name); localStorage.setItem('sellit_auth', JSON.stringify(result)); currentSheetId = targetSheet; currentUser = result.user; initAuth(); } else { err.textContent = result.message || "Identifiants incorrects"; err.classList.remove('hidden'); } } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); } finally { btn.disabled = false; btn.textContent = "Se Connecter"; } });
         
         async function fetchAppsScript(action, data = {}) { if(action !== 'LOGIN' && action !== 'SAVE_CONFIG' && action !== 'GET_CONFIG' && action !== 'CREATE_USER' && action !== 'GET_USERS' && action !== 'DELETE_USER') data.targetSheetId = currentSheetId; if (action === 'READ' && currentSheetId === 'ALL' && currentUser) data.org = currentUser.org; try { const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'cors', cache: 'no-cache', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, ...data }) }); return JSON.parse(await response.text()); } catch (error) { console.error(error); return { success: false, error: error.message }; } }
         async function loadDeals() { 
             if(!currentSheetId || currentSheetId === 'null') {
-                alert("⚠️ ATTENTION : Aucun ID de fichier n'est associé à votre compte.\n\nVeuillez contacter l'administrateur pour qu'il ajoute votre Sheet ID dans l'onglet 'Utilisateurs' du fichier Master.");
-                document.getElementById('no-data-message').innerHTML = '<div class="text-center p-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i><p class="font-bold text-lg text-white">Erreur de Configuration</p><p class="text-xs text-slate-400">Votre compte n\'est lié à aucune Google Sheet.</p></div>';
+                alert("⚠️ ATTENTION : Aucun ID de fichier n'est associé à votre compte.\n\nVeuillez contacter l'administrateur.");
                 document.getElementById('no-data-message').classList.remove('hidden');
                 return;
             }
@@ -753,6 +741,7 @@
             try { 
                 const res = await fetchAppsScript('READ'); 
                 if (res.success) { 
+                    // TIMEZONE FIX : On filtre les deals valides
                     allDealsCache = (res.deals || []).filter(d => d.nomPrenom && String(d.nomPrenom).trim() !== ""); 
                     renderAll(); 
                 } else { 
@@ -772,7 +761,6 @@
             if(prodVal) prodSelect.value = prodVal; if(payVal) paySelect.value = payVal;
         }
 
-        // --- INTELLIGENCE DE PRIX (Prop 2) ---
         window.calcRest = function() {
             const t = safeFloat(document.getElementById('prix').value);
             const c = safeFloat(document.getElementById('mensualite').value);
@@ -817,16 +805,42 @@
         function renderAll() { populateFormDropdowns(); applyFilters(); if(document.getElementById('view-stats').classList.contains('hidden') === false) updateReports(); if(document.getElementById('view-settings').classList.contains('hidden') === false) renderSettingsView(); }
         
         // --- FILTERS ---
-        function applyFilters() { const m = document.getElementById('filter-month').value; const s = document.getElementById('filter-status').value; let list = allDealsCache; if (m !== 'all') list = list.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m)); if (s !== 'all') list = list.filter(d => checkStatus(d, s)); list.sort((a,b) => new Date(b.dateRDV||0) - new Date(a.dateRDV||0)); renderTable(list); updateKPIs(list); }
+        // TIMEZONE FIX : Utilisation du tri String (localeCompare) au lieu de Date object pour éviter le shift
+        function applyFilters() { 
+            const m = document.getElementById('filter-month').value; 
+            const s = document.getElementById('filter-status').value; 
+            let list = allDealsCache; 
+            if (m !== 'all') list = list.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m)); 
+            if (s !== 'all') list = list.filter(d => checkStatus(d, s)); 
+            
+            // SORT PAR CHAINE DE CARACTERE (ISO YYYY-MM-DD est triable alphabétiquement)
+            list.sort((a,b) => (b.dateRDV || "").localeCompare(a.dateRDV || "")); 
+            
+            renderTable(list); updateKPIs(list); 
+        }
         
-        // MISSING FUNCTIONS ADDED HERE
+        // HELPER TIMEZONE FIX
+        // Force l'interprétation locale (Année, Mois, Jour) sans heure
+        function parseDateLocal(s) {
+            if(!s) return new Date(0);
+            if(s.indexOf('-') > -1) {
+                // Découpe YYYY-MM-DD
+                const p = s.split('T')[0].split('-');
+                // Note: Month index 0-11
+                return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+            }
+            return new Date(s); // Fallback
+        }
+
+        // REVISED MONTH FILTER
         function checkMonthFilter(dateStr, filterValue) {
-            const d = new Date(dateStr);
+            // Utilise parseDateLocal pour éviter le -1 jour
+            const d = parseDateLocal(dateStr);
             const now = new Date();
+            
             if (filterValue === 'current') {
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
             }
-            // ADDED: Logic for 'week' filter
             if (filterValue === 'week') {
                 return getWeekNumber(d) === getWeekNumber(now) && d.getFullYear() === now.getFullYear();
             }
@@ -842,37 +856,44 @@
             return true;
         }
 
-        function renderTable(list) { const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); list.forEach(d => { const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; 
-        // ROLE CHECK NORMALIZED
+        function renderTable(list) { 
+            const tbody = document.getElementById('deals-table-body'); tbody.innerHTML = ''; 
+            document.getElementById('no-data-message').classList.toggle('hidden', list.length > 0); 
+            list.forEach(d => { 
+                // Pour "Retard", on peut comparer les chaines ISO directement si on veut être strict, 
+                // mais ici new Date() est acceptable car c'est relatif à "maintenant".
+                const isPast = d.dateRDV && new Date(d.dateRDV) < new Date().setHours(0,0,0,0); 
+                const isLate = isPast && !d.close && !d.nonClose && !d.ghost && !d.cancelled && !d.unqualified && !d.rescheduled; 
+                
+                let badgeClass = "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"; let badgeText = "NOUVEAU"; if(d.close) { badgeClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"; badgeText = "GAGNÉ"; } else if(d.aFollowUp) { badgeClass = "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"; badgeText = "RELANCE"; } else if(d.ghost) { badgeClass = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; badgeText = "GHOST"; } else if(d.nonClose) { badgeClass = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"; badgeText = "PERDU"; } else if(d.cancelled) { badgeClass = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"; badgeText = "ANNULÉ"; } else if(d.unqualified) { badgeClass = "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"; badgeText = "NON QUALIF"; } else if(d.rescheduled) { badgeClass = "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"; badgeText = "REPORTÉ"; } const ownerTag = d.ownerName ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded ml-2 border border-slate-200 dark:border-slate-700">${d.ownerName}</div>` : ''; 
+        
         const roleNettoye = (currentUser.role || "").trim().toLowerCase();
         
-        // AJOUT INDICATEUR RELANCE (MASQUÉ POUR LE MOMENT)
         let relanceTag = '';
         /*
         if(d.dateRelance) {
-            const rDate = new Date(d.dateRelance);
+            const rDate = parseDateLocal(d.dateRelance); // UTILISATION PARSE LOCAL
             const today = new Date(); today.setHours(0,0,0,0);
-            const isToday = rDate.getTime() === today.getTime();
-            if(isToday) relanceTag = `<div class="mt-1 text-[10px] text-indigo-400 font-bold"><i class="fa-solid fa-bell animate-pulse"></i> Relance ce jour</div>`;
+            // Comparaison approximative
+            if(rDate.getTime() >= today.getTime() && rDate.getTime() < today.getTime() + 86400000) relanceTag = `<div class="mt-1 text-[10px] text-indigo-400 font-bold"><i class="fa-solid fa-bell animate-pulse"></i> Relance ce jour</div>`;
             else relanceTag = `<div class="mt-1 text-[10px] text-slate-500"><i class="fa-regular fa-bell"></i> ${formatDateFR(d.dateRelance)}</div>`;
         }
         */
 
         const row = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-none group"><td class="px-6 py-4"><div class="flex items-center"><div><div class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-accent transition-colors">${d.nomPrenom}</div><div class="flex items-center mt-0.5"><span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">${d.source || '-'}</span>${d.entrepreneur ? `<span class="ml-2 text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 rounded font-bold border border-indigo-100 dark:border-indigo-500/20">${d.entrepreneur}</span>` : ''}${ownerTag}</div></div></div></td><td class="px-6 py-4"><div class="text-sm font-medium text-slate-600 dark:text-slate-300">${formatDateFR(d.dateRDV)}</div>${isLate ? '<div class="text-[10px] text-red-500 font-bold uppercase mt-0.5">Retard</div>' : ''}${relanceTag}</td><td class="px-6 py-4"><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${d.formation || '-'}</div>${d.prix ? `<div class="text-[10px] text-slate-400 font-mono">${d.prix} €</div>` : ''}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span></td><td class="px-6 py-4 text-right"><div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2"><button onclick="viewHistory('${d.id}')" class="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-regular fa-comments"></i></button>${currentSheetId !== 'ALL' ? `<button onclick="editDeal('${d.id}')" class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400"><i class="fa-solid fa-pen"></i></button>${roleNettoye !== 'closer' ? `<button onclick="deleteDeal('${d.id}')" class="p-1.5 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}` : ''}</div></td></tr>`; tbody.innerHTML += row; }); }
+        
         function updateKPIs(list) { document.getElementById('metric-total').textContent = list.length; document.getElementById('metric-followup').textContent = list.filter(d => d.aFollowUp).length; document.getElementById('metric-closed').textContent = list.filter(d => d.close).length; }
         
-        // --- REPORTING (NOUVELLE VERSION INTELLIGENTE) ---
-        // AJOUT: Gestion Custom Date UI
         window.toggleCustomDate = function() {
             const sel = document.getElementById('stats-filter-date');
             const container = document.getElementById('custom-date-container');
             if(sel.value === 'custom') {
                 container.classList.remove('hidden');
-                // Pré-remplir avec le mois en cours si vide
                 if(!document.getElementById('stats-date-start').value) {
                     const now = new Date();
                     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
                     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    // ISO String OK here for input value
                     document.getElementById('stats-date-start').value = firstDay.toISOString().split('T')[0];
                     document.getElementById('stats-date-end').value = lastDay.toISOString().split('T')[0];
                 }
@@ -882,11 +903,9 @@
             updateReports();
         }
 
-        // --- NOUVELLE FONCTION: GENERATEUR DE RAPPORT DATA-PURE (SUPER ADMIN) ---
         window.openReportModal = function() {
             if(currentUser.role !== 'super_admin') return;
             
-            // 1. Définir le dataset filtré (identique à updateReports)
             const m = document.getElementById('stats-filter-date').value;
             let dataset = allDealsCache;
             let rangeText = "";
@@ -895,12 +914,12 @@
                 const sStr = document.getElementById('stats-date-start').value;
                 const eStr = document.getElementById('stats-date-end').value;
                 if(sStr && eStr) {
-                    const start = new Date(sStr); start.setHours(0,0,0,0);
-                    const end = new Date(eStr); end.setHours(23,59,59,999);
+                    const start = parseDateLocal(sStr); 
+                    const end = parseDateLocal(eStr); end.setHours(23,59,59,999);
                     rangeText = `Du ${formatDateFR(sStr)} au ${formatDateFR(eStr)}`;
                     dataset = dataset.filter(d => {
                         if(!d.dateRDV) return false;
-                        const dateR = new Date(d.dateRDV);
+                        const dateR = parseDateLocal(d.dateRDV);
                         return dateR >= start && dateR <= end;
                     });
                 } else rangeText = "Période personnalisée incomplète";
@@ -911,32 +930,22 @@
                 rangeText = "Tout l'historique";
             }
 
-            document.getElementById('report-date-range').textContent = rangeText;
-
-            // 2. Calculs Exhaustifs
+            // ... (Reste de la logique de rapport inchangée)
             let totalLeads = dataset.length;
             let totalShows = 0;
             let totalWins = 0;
             let caSigned = 0;
             let cashCollected = 0;
-            
-            // Stats par Closer
             let closerStats = {};
-            
-            // --- AJOUT COMMENTAIRES ---
             const commentsByType = { wins: [], losses: [], followups: [] };
 
             dataset.forEach(d => {
                 const owner = d.ownerName || "Inconnu";
                 if(!closerStats[owner]) closerStats[owner] = { booked: 0, shows: 0, wins: 0, ca: 0, cash: 0 };
-                
                 closerStats[owner].booked++;
-                
-                // Show ? (Pas Ghost/Annulé/Reporté)
                 if(!d.ghost && !d.cancelled && !d.rescheduled) {
                     totalShows++;
                     closerStats[owner].shows++;
-                    
                     if(d.close) {
                         totalWins++;
                         closerStats[owner].wins++;
@@ -948,20 +957,15 @@
                         closerStats[owner].cash += c;
                     }
                 }
-
-                // --- LOGIQUE COMMENTAIRES ---
                 if (d.commentaireHistory && d.commentaireHistory.trim() !== "") {
-                    // Extract latest comment (first part before double newline)
                     const latestNote = d.commentaireHistory.split('\n\n')[0].replace(/\n/g, ' '); 
                     const entry = `• ${d.nomPrenom} (${owner}) : "${latestNote}"`;
-                    
                     if(d.close) commentsByType.wins.push(entry);
                     else if(d.nonClose) commentsByType.losses.push(entry);
                     else if(d.aFollowUp) commentsByType.followups.push(entry);
                 }
             });
 
-            // 3. Construction du Texte
             let report = `RAPPORT DATA PURE - ${rangeText}\n`;
             report += `Généré le ${new Date().toLocaleString('fr-FR')}\n`;
             report += `------------------------------------------------\n`;
@@ -969,7 +973,6 @@
             report += `• CA Signé       : ${caSigned.toLocaleString()} €\n`;
             report += `• Cash T0        : ${cashCollected.toLocaleString()} €\n`;
             report += `• Reste à venir  : ${(caSigned - cashCollected).toLocaleString()} €\n\n`;
-            
             report += `📉 ENTONNOIR\n`;
             report += `• Total RDV      : ${totalLeads}\n`;
             report += `• Total Shows    : ${totalShows} (Show Rate: ${totalLeads ? Math.round(totalShows/totalLeads*100) : 0}%)\n`;
@@ -978,31 +981,20 @@
             report += `------------------------------------------------\n`;
             report += `👥 DÉTAIL PAR CLOSER (DATA EXHAUSTIVE)\n\n`;
 
-            // Trier par CA décroissant
             Object.keys(closerStats).sort((a,b) => closerStats[b].ca - closerStats[a].ca).forEach(name => {
                 const s = closerStats[name];
                 const cr = s.shows ? Math.round((s.wins/s.shows)*100) : 0;
-                
                 report += `[${name.toUpperCase()}]\n`;
                 report += `  - Shows: ${s.shows} | Ventes: ${s.wins} | CR: ${cr}%\n`;
                 report += `  - CA: ${s.ca.toLocaleString()} € | Cash: ${s.cash.toLocaleString()} €\n\n`;
             });
 
-            // 4. Section Commentaires
             report += `------------------------------------------------\n`;
             report += `📝 EXTRAIT COMMENTAIRES (Derniers échanges)\n\n`;
-            
-            if(commentsByType.wins.length > 0) {
-                report += `🏆 CLOSINGS (Dernière note)\n${commentsByType.wins.join('\n')}\n\n`;
-            }
-            if(commentsByType.losses.length > 0) {
-                report += `❌ PERTES (Dernière note)\n${commentsByType.losses.join('\n')}\n\n`;
-            }
-             if(commentsByType.followups.length > 0) {
-                report += `⚡ RELANCES (Dernière note)\n${commentsByType.followups.join('\n')}\n\n`;
-            }
+            if(commentsByType.wins.length > 0) report += `🏆 CLOSINGS (Dernière note)\n${commentsByType.wins.join('\n')}\n\n`;
+            if(commentsByType.losses.length > 0) report += `❌ PERTES (Dernière note)\n${commentsByType.losses.join('\n')}\n\n`;
+             if(commentsByType.followups.length > 0) report += `⚡ RELANCES (Dernière note)\n${commentsByType.followups.join('\n')}\n\n`;
 
-            // 5. Affichage
             document.getElementById('report-textarea').value = report;
             document.getElementById('report-modal').classList.remove('hidden');
         };
@@ -1010,13 +1002,11 @@
         window.copyReport = function() {
             const txt = document.getElementById('report-textarea');
             txt.select();
-            document.execCommand('copy'); // Fallback plus compatible iframe
-            // Ou navigator.clipboard.writeText(txt.value) si supporté
+            document.execCommand('copy');
             alert("Rapport copié dans le presse-papier !");
         };
 
         function updateReports() {
-            // Appliquer les filtres date (mois/semaine/custom) AVANT de calculer les stats
             const m = document.getElementById('stats-filter-date').value;
             let dataset = allDealsCache;
 
@@ -1024,11 +1014,11 @@
                 const sStr = document.getElementById('stats-date-start').value;
                 const eStr = document.getElementById('stats-date-end').value;
                 if(sStr && eStr) {
-                    const start = new Date(sStr); start.setHours(0,0,0,0);
-                    const end = new Date(eStr); end.setHours(23,59,59,999);
+                    const start = parseDateLocal(sStr); 
+                    const end = parseDateLocal(eStr); end.setHours(23,59,59,999);
                     dataset = dataset.filter(d => {
                         if(!d.dateRDV) return false;
-                        const dateR = new Date(d.dateRDV);
+                        const dateR = parseDateLocal(d.dateRDV);
                         return dateR >= start && dateR <= end;
                     });
                 }
@@ -1036,16 +1026,12 @@
                 dataset = dataset.filter(d => d.dateRDV && checkMonthFilter(d.dateRDV, m));
             }
 
-            // Variables de calcul
             let booked = dataset.length;
             let ghosts = 0, cancelled = 0, rescheduled = 0, unqualified = 0, wins = 0, losses = 0;
             let caSigned = 0, cashCollected = 0;
-            
-            // Leaderboard data
             const teamStats = {};
 
             dataset.forEach(d => {
-                // 1. Catégorisation
                 if(d.ghost) ghosts++;
                 else if(d.cancelled) cancelled++;
                 else if(d.rescheduled) rescheduled++;
@@ -1053,14 +1039,10 @@
                 else if(d.close) wins++;
                 else if(d.nonClose) losses++;
 
-                // 2. Finance
                 const price = safeFloat(d.prix);
                 const cash = safeFloat(d.mensualite);
                 if(d.close) { caSigned += price; cashCollected += cash; }
 
-                // 3. Leaderboard Aggregation
-                // MODIFICATION V4.6 : Fallback sécurisé pour l'affichage en mode équipe.
-                // Si le nom du closer est manquant (backend) et qu'on est en vue 'ALL' (équipe), on affiche "Inconnu" plutôt que le nom du Super Admin.
                 const owner = d.ownerName || (currentSheetId === 'ALL' ? "Inconnu" : (currentUser.name || "Moi"));
                 const role = d.ownerRole || "Closer";
                 
@@ -1076,85 +1058,87 @@
                 }
             });
 
-            // 4. Calculs Dérivés (Global)
             const shows = booked - (ghosts + cancelled + rescheduled);
             const showRate = booked ? Math.round((shows/booked)*100) : 0;
             const closeRate = shows ? Math.round((wins/shows)*100) : 0;
             const lossRate = shows ? Math.round((losses/shows)*100) : 0;
-            const nqRate = shows ? Math.round((unqualified/shows)*100) : 0; // NQ font partie des shows généralement
-            
+            const nqRate = shows ? Math.round((unqualified/shows)*100) : 0;
             const rps = shows ? Math.round(caSigned / shows) : 0;
             const aov = wins ? Math.round(caSigned / wins) : 0;
             const collectionRate = caSigned ? Math.round((cashCollected / caSigned)*100) : 0;
 
-            // 5. Affichage DOM
             document.getElementById('stat-booked').textContent = booked;
             document.getElementById('stat-shows').textContent = shows;
             document.getElementById('stat-show-rate').textContent = `Show Rate: ${showRate}%`;
-            
             document.getElementById('stat-ghost').textContent = ghosts;
             document.getElementById('stat-ghost-rate').textContent = booked ? Math.round((ghosts/booked)*100) + '%' : '0%';
-            
             document.getElementById('stat-rescheduled').textContent = rescheduled;
             document.getElementById('stat-rescheduled-rate').textContent = booked ? Math.round((rescheduled/booked)*100) + '%' : '0%';
-
             document.getElementById('stat-wins').textContent = wins;
             document.getElementById('stat-close-rate').textContent = closeRate + '%';
             document.getElementById('bar-close-rate').style.width = closeRate + '%';
-            
             document.getElementById('stat-loss-rate').textContent = lossRate + '%';
             document.getElementById('stat-loss-nb').textContent = losses + ' Deals';
-            
             document.getElementById('stat-nq-rate').textContent = nqRate + '%';
             document.getElementById('stat-nq-nb').textContent = unqualified + ' Deals';
-
             document.getElementById('stat-ca').textContent = caSigned.toLocaleString('fr-FR') + ' €';
             document.getElementById('stat-cash').textContent = cashCollected.toLocaleString('fr-FR') + ' €';
             document.getElementById('stat-collection').textContent = `Encaissement: ${collectionRate}%`;
             document.getElementById('stat-aov').textContent = aov.toLocaleString('fr-FR') + ' €';
             document.getElementById('stat-rps').textContent = rps.toLocaleString('fr-FR') + ' €';
 
-            // 6. Rendu Leaderboard (Si Manager/Admin)
-            // if(currentUser.role !== 'closer') { // MODIF V4.7 : Suppression restriction
-                document.getElementById('stats-leaderboard-container').classList.remove('hidden');
-                const tbody = document.getElementById('leaderboard-body');
-                tbody.innerHTML = '';
-                
-                // Trier par CA décroissant
-                Object.keys(teamStats).sort((a,b) => teamStats[b].ca - teamStats[a].ca).forEach(name => {
-                    const s = teamStats[name];
-                    const cr = s.shows ? Math.round((s.wins/s.shows)*100) : 0;
-                    const rpsUser = s.shows ? Math.round(s.ca/s.shows) : 0;
-                    
-                    // Style conditionnel pour le rôle
-                    const roleBadge = s.role.toLowerCase() === 'manager' || s.role.toLowerCase() === 'admin' 
-                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-600 uppercase tracking-wide">Manager</span>`
-                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wide">Closer</span>`;
+            document.getElementById('stats-leaderboard-container').classList.remove('hidden');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            
+            Object.keys(teamStats).sort((a,b) => teamStats[b].ca - teamStats[a].ca).forEach(name => {
+                const s = teamStats[name];
+                const cr = s.shows ? Math.round((s.wins/s.shows)*100) : 0;
+                const rpsUser = s.shows ? Math.round(s.ca/s.shows) : 0;
+                const roleBadge = s.role.toLowerCase() === 'manager' || s.role.toLowerCase() === 'admin' 
+                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-600 uppercase tracking-wide">Manager</span>`
+                    : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wide">Closer</span>`;
 
-                    tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <td class="p-4 font-bold dark:text-white text-slate-800">${name}</td>
-                        <td class="p-4">${roleBadge}</td>
-                        <td class="p-4 text-center dark:text-slate-300 text-slate-600">${s.shows}</td>
-                        <td class="p-4 text-center dark:text-slate-300 text-slate-600 font-bold">${s.wins}</td>
-                        <td class="p-4 text-center">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${cr > 30 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${cr}%</span>
-                        </td>
-                        <td class="p-4 text-right font-mono font-bold text-amber-500">${s.ca.toLocaleString()} €</td>
-                        <td class="p-4 text-right font-mono text-xs dark:text-slate-400 text-slate-500">${rpsUser.toLocaleString()} €</td>
-                    </tr>`;
-                });
-            // }
+                tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td class="p-4 font-bold dark:text-white text-slate-800">${name}</td>
+                    <td class="p-4">${roleBadge}</td>
+                    <td class="p-4 text-center dark:text-slate-300 text-slate-600">${s.shows}</td>
+                    <td class="p-4 text-center dark:text-slate-300 text-slate-600 font-bold">${s.wins}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 rounded text-xs font-bold ${cr > 30 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${cr}%</span>
+                    </td>
+                    <td class="p-4 text-right font-mono font-bold text-amber-500">${s.ca.toLocaleString()} €</td>
+                    <td class="p-4 text-right font-mono text-xs dark:text-slate-400 text-slate-500">${rpsUser.toLocaleString()} €</td>
+                </tr>`;
+            });
         }
 
         function toggleClosing() { const div = document.getElementById('closing-details'); if(document.getElementById('close').checked) div.classList.remove('hidden'); else div.classList.add('hidden'); }
         document.getElementById('close').addEventListener('change', toggleClosing);
         function resetForm() { document.getElementById('deal-form').reset(); editingId = null; toggleClosing(); document.getElementById('comment-history').classList.add('hidden'); document.getElementById('prospect-avatar').textContent = "?"; setDealStatus(null); }
-        function formatDateFR(s) { if(!s) return '-'; const d = new Date(s); return d.toLocaleDateString('fr-FR'); }
+        
+        // TIMEZONE FIX: Formatage purement textuel (DD/MM/YYYY)
+        function formatDateFR(s) { 
+            if(!s) return '-'; 
+            if(s.includes('T')) s = s.split('T')[0];
+            const parts = s.split('-'); // ["2023", "10", "25"]
+            if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return s; 
+        }
+
         document.getElementById('filter-month').addEventListener('change', () => { applyFilters(); if(!document.getElementById('view-stats').classList.contains('hidden')) updateReports(); }); 
         document.getElementById('filter-status').addEventListener('change', applyFilters); 
         document.getElementById('reset-filters').addEventListener('click', () => { document.getElementById('filter-month').value = 'current'; document.getElementById('filter-status').value = 'all'; applyFilters(); if(!document.getElementById('view-stats').classList.contains('hidden')) updateReports(); });
-        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        
+        // REVISED WEEK NUMBER (using local parsing)
+        function getWeekNumber(d) { 
+            // Copy date so don't modify original
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); 
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); 
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); 
+            return Math.ceil((((d - yearStart) / 86400000) + 1)/7); 
+        }
         function safeFloat(val) { const s = String(val).replace(/[^0-9.-]/g, ''); const f = parseFloat(s); return isNaN(f) ? 0 : f; }
 
         initAuth();
